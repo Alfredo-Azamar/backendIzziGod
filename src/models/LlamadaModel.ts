@@ -2,8 +2,7 @@ import { Model, Sequelize } from "sequelize";
 
 interface LlamadaAttributes {
   IdLlamada: number;
-  HoraInicio: string;
-  HoraFin: string;
+  FechaHora: string;
   Notas: string;
 }
 
@@ -13,8 +12,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     implements LlamadaAttributes
   {
     public IdLlamada!: number;
-    public HoraInicio!: string;
-    public HoraFin!: string;
+    public FechaHora!: string;
     public Notas!: string;
 
     static associate(models: any) {
@@ -44,12 +42,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      HoraInicio: {
-        type: DataTypes.TIME,
-        allowNull: false,
-      },
-      HoraFin: {
-        type: DataTypes.TIME,
+      FechaHora: {
+        type: DataTypes.DATE,
         allowNull: false,
       },
       Notas: {

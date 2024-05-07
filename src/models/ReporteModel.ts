@@ -2,17 +2,13 @@ import { Model, Sequelize } from "sequelize";
 
 interface ReporteAttibutes{
     IdReporte: number;
-    Hora: string;
-    Fecha: string;
-    Prioridad: string;
+    FechaHora: string;
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
     class Reporte extends Model <ReporteAttibutes> implements ReporteAttibutes {
         public IdReporte!:number;
-        public Hora!:string;
-        public Fecha!:string;
-        public Prioridad!:string;
+        public FechaHora!:string;
 
         static associate(models: any){
             Reporte.belongsTo(models.Zona,{
@@ -23,6 +19,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
                 foreignKey: 'IdIncidencia',
                 as: 'TipoIncidencia',
             });
+            Reporte.belongsTo(models.Prioridad,{
+                foreignKey: 'IdPrioridad',
+                as: 'Prioridad',
+            });
         }
     }
     Reporte.init({
@@ -32,16 +32,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
             primaryKey: true,
             autoIncrement: true
         },
-        Hora: {
-            type: DataTypes.TIME,
-            allowNull: false
-        },
-        Fecha: {
+        FechaHora: {
             type: DataTypes.DATE,
-            allowNull: false
-        },
-        Prioridad: {
-            type: DataTypes.INTEGER,
             allowNull: false
         }
     }, {
