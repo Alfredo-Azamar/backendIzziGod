@@ -1,9 +1,17 @@
 import { Model, Sequelize } from "sequelize";
 
+enum EstadoEnum{
+  Inactivo = "inactivo",
+  Positivo = "positivo",
+  Preventivo = "preventivo",
+  Critico = "critico"
+}
+
 interface LlamadaAttributes {
   IdLlamada: number;
   FechaHora: string;
   Notas: string;
+  Estado: EstadoEnum;
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -14,6 +22,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     public IdLlamada!: number;
     public FechaHora!: string;
     public Notas!: string;
+    public Estado!: EstadoEnum;
 
     static associate(models: any) {
       Llamada.belongsTo(models.Empleado, {
@@ -23,10 +32,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
       Llamada.belongsTo(models.Cliente, {
         foreignKey: "IdCliente",
         as: "Cliente",
-      });
-      Llamada.belongsTo(models.Estado, {
-        foreignKey: "IdEstado",
-        as: "Estado",
       });
       Llamada.belongsTo(models.Asunto, {
         foreignKey: "IdAsunto",
@@ -50,6 +55,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      Estado: {
+        type: DataTypes.ENUM,
+        values: Object.values(EstadoEnum),
+        allowNull: false,
+        defaultValue: EstadoEnum.Inactivo,
+      }
     },
     {
       sequelize,

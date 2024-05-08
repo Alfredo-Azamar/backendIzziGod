@@ -1,7 +1,13 @@
 import { Model, Sequelize } from "sequelize";
 
+export enum RolEnum {
+  Supervisor = "supervisor",
+  Agente = "agente"
+}
+
 interface EmpleadoAttributes {
   IdEmpleado: number;
+  Rol: RolEnum;
   Nombre: string;
   ApellidoP: string;
   ApellidoM: string;
@@ -15,18 +21,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
     implements EmpleadoAttributes
   {
     public IdEmpleado!: number;
+    public Rol!: RolEnum;
     public Nombre!: string;
     public ApellidoP!: string;
     public ApellidoM!: string;
     public Usuario!: string;
     public Contra!: string;
-
-    static associate(models: any) {
-      Empleado.belongsTo(models.Rol, {
-        foreignKey: "IdRol",
-        as: "Rol",
-      });
-    }
   }
   Empleado.init(
     {
@@ -35,6 +35,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
         allowNull: false,
         primaryKey: true,
         autoIncrement: true,
+      },
+      Rol: {
+        type: DataTypes.ENUM,
+        values: Object.values(RolEnum),
+        allowNull: false,
+        defaultValue: RolEnum.Agente,
       },
       Nombre: {
         type: DataTypes.STRING,

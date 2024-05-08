@@ -1,5 +1,6 @@
 import { Request,Response } from "express";
 import AbstractController from "./AbstractController";
+import {RolEnum} from "../models/EmpleadoModel";
 import db from "../models";
 
 class EmpleadoController extends AbstractController {
