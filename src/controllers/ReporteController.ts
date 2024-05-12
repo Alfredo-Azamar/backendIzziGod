@@ -15,10 +15,10 @@ class ReporteController extends AbstractController{
     }
     //Declarar todas las rutas del controlador
     protected initRoutes(): void {
-        this.router.get('/test',this.getTest.bind(this));//*
-        this.router.get('/consultarReportes',this.getConsultarReportes.bind(this));//*
-        this.router.post('/crearReporte',this.postCrearReporte.bind(this));//*
-        this.router.delete('/eliminarReporte/:id',this.deleteBorrarReporte.bind(this));//*
+        this.router.get('/test',this.getTest.bind(this));
+        this.router.get('/consultarReportes',this.getConsultarReportes.bind(this));
+        this.router.post('/crearReporte',this.postCrearReporte.bind(this));
+        this.router.delete('/eliminarReporte/:id',this.deleteBorrarReporte.bind(this));
     }
 
     private getTest(req: Request,res: Response){

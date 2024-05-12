@@ -15,14 +15,14 @@ class ClienteController extends AbstractController {
     }
     // Declarar todas las rutas del controlador
     protected initRoutes(): void {
-        this.router.get('/test',this.getTest.bind(this));//*
-        this.router.get('/consultarClientes',this.getConsultarClientes.bind(this));//*
-        this.router.post('/crearCliente',this.postCrearCliente.bind(this));//*
-        this.router.delete('/eliminarCliente/:id',this.deleteBorrarCliente.bind(this));//*
-        this.router.get('/consultarContrato',this.getConsultarContrato.bind(this));//*
-        this.router.post('/crearContrato',this.postCrearContrato.bind(this));//*
+        this.router.get('/test',this.getTest.bind(this));
+        this.router.get('/consultarClientes',this.getConsultarClientes.bind(this));
+        this.router.post('/crearCliente',this.postCrearCliente.bind(this));
+        this.router.delete('/eliminarCliente/:id',this.deleteBorrarCliente.bind(this));
+        this.router.get('/consultarContrato',this.getConsultarContrato.bind(this));
+        this.router.post('/crearContrato',this.postCrearContrato.bind(this));
         this.router.put('/actualizarContrato/:id', this.putActualizarContrato.bind(this));//* NO IMPLEMENTADO EN APPS
-        this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));//*
+        this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));
     }
 
     private getTest(req: Request,res: Response){

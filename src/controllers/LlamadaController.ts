@@ -15,13 +15,10 @@ class LlamadaController extends AbstractController {
     }
     //Declarar todas las rutas del controlador
     protected initRoutes(): void {
-        this.router.get('/test',this.getTest.bind(this));//*
-        this.router.get('/consultarLlamadas',this.getConsultarLlamadas.bind(this));//*
-        this.router.post('/crearLlamada',this.postCrearLlamada.bind(this));//*
-        this.router.delete('/eliminarLlamada/:id',this.deleteBorrarLlamada.bind(this));//*
-        this.router.get('/consultarAsunto', this.getConsultarAsunto.bind(this));//*
-        this.router.post('/crearAsunto', this.postCrearAsunto.bind(this));//*
-        this.router.put('/actualizarAsunto/:id', this.putActualizarAsunto.bind(this));//* NO IMPLEMENTADO EN APPS
+        this.router.get('/test',this.getTest.bind(this));
+        this.router.get('/consultarLlamadas',this.getConsultarLlamadas.bind(this));
+        this.router.post('/crearLlamada',this.postCrearLlamada.bind(this));
+        this.router.delete('/eliminarLlamada/:id',this.deleteBorrarLlamada.bind(this));
     }
     
     private getTest(req: Request,res: Response){
@@ -66,40 +63,7 @@ class LlamadaController extends AbstractController {
             console.log(err);
             res.status(500).send('Internal server error'+err);
         }
-    }
-
-    private async getConsultarAsunto(req: Request,res: Response){
-        try{
-            let asuntos = await db["Asunto"].findAll();
-            res.status(200).json(asuntos);
-        }catch(err){
-            console.log(err)
-            res.status(500).send('Internal server error'+err);
-        }
-    }
-
-    private async postCrearAsunto(req: Request,res: Response){
-        try{
-            console.log(req.body);
-            await db.Asunto.create(req.body); //Insert
-            console.log("Asunto creado");
-            res.status(200).send("<h1>Asunto creado</h1>");
-        }catch(err){
-            console.log(err);
-            res.status(500).send('Internal server error'+err);
-        }
-    }
-
-    private async putActualizarAsunto(req: Request,res: Response){
-        try{
-            const {id} = req.params;
-            await db.Asunto.update(req.body,{where:{IdAsunto:id}});
-            res.status(200).send("<h1>Asunto actualizado</h1>");
-        }catch(err){
-            console.log(err);
-            res.status(500).send('Internal server error'+err);
-        }
-    }
+    } 
 }
 
 export default LlamadaController;

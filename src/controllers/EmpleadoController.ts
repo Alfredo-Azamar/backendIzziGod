@@ -1,6 +1,5 @@
 import { Request,Response } from "express";
 import AbstractController from "./AbstractController";
-import {RolEnum} from "../models/EmpleadoModel";
 import db from "../models";
 
 class EmpleadoController extends AbstractController {
@@ -16,10 +15,10 @@ class EmpleadoController extends AbstractController {
     }
     //Declarar todas las rutas del controlador
     protected initRoutes(): void {
-        this.router.get('/test',this.getTest.bind(this));//*
-        this.router.get('/consultarEmpleados',this.getConsultarEmpleados.bind(this));//*
-        this.router.post('/crearEmpleado',this.postCrearEmpleado.bind(this));//*
-        this.router.delete('/eliminarEmpleado/:id',this.deleteBorrarEmpleado.bind(this));//*
+        this.router.get('/test',this.getTest.bind(this));
+        this.router.get('/consultarEmpleados',this.getConsultarEmpleados.bind(this));
+        this.router.post('/crearEmpleado',this.postCrearEmpleado.bind(this));
+        this.router.delete('/eliminarEmpleado/:id',this.deleteBorrarEmpleado.bind(this));
     }
     
     private getTest(req: Request,res: Response){
