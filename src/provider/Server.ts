@@ -16,7 +16,7 @@ class Server{
         this.port = appInit.port;
         this.env = appInit.env;
         this.loadmiddlewares(appInit.middlewares);
-        this.app.use(cors());clea
+        this.app.use(cors());
         this.loadRoutes(appInit.controllers);
         this.connectDB();        
         
