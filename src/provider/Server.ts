@@ -2,6 +2,7 @@
 import express, {Request, Response} from 'express'; //TS
 import AbstractController from '../controllers/AbstractController';
 import db from '../models';
+import cors from 'cors';
 
 class Server{
     //Atributos de instancia
@@ -15,6 +16,7 @@ class Server{
         this.port = appInit.port;
         this.env = appInit.env;
         this.loadmiddlewares(appInit.middlewares);
+        this.app.use(cors());clea
         this.loadRoutes(appInit.controllers);
         this.connectDB();        
         
