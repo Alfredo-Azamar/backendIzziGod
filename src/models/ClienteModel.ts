@@ -1,22 +1,20 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
 interface ClienteAttributes {
-    IdCliente: number;
+    Celular: string;
     Nombre: string;
     ApellidoP: string;
     ApellidoM: string;
     FechaNac: string;
-    Celular: string;
 }
 
 module.exports = (sequelize: Sequelize, type: any) => {
     class Cliente extends Model<ClienteAttributes> implements ClienteAttributes {
-        public IdCliente!: number;
+        public Celular!: string;
         public Nombre!: string;
         public ApellidoP!: string;
         public ApellidoM!: string;
         public FechaNac!: string;
-        public Celular!: string;
 
         static associate(models: any) {
             Cliente.belongsTo(models.Zona, {
@@ -28,10 +26,9 @@ module.exports = (sequelize: Sequelize, type: any) => {
     }
 
     Cliente.init({
-        IdCliente: {
-            type: type.INTEGER,
+        Celular: {
+            type: DataTypes.STRING,
             primaryKey: true,
-            autoIncrement: true,
             allowNull: false
         },
         Nombre: {
@@ -48,10 +45,6 @@ module.exports = (sequelize: Sequelize, type: any) => {
         },
         FechaNac: {
             type: DataTypes.DATEONLY,
-            allowNull: false
-        },
-        Celular: {
-            type: DataTypes.STRING,
             allowNull: false
         }
     },

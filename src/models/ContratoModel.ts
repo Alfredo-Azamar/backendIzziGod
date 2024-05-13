@@ -12,7 +12,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
 
         static associate(models: any) {
             Contrato.belongsTo(models.Cliente, {
-                foreignKey: "IdCliente",
+                foreignKey: "Celular",
                 as: "Cliente"
             });
             Contrato.belongsTo(models.Paquete, {

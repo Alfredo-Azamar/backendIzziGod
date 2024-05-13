@@ -24,7 +24,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
                 as: 'Zona',
             });
             Reporte.belongsTo(models.Cliente,{
-                foreignKey: 'IdCliente',
+                foreignKey: 'Celular',
                 as: 'Cliente',
             });
             Reporte.belongsTo(models.Empleado,{

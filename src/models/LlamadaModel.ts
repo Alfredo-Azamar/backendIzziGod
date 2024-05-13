@@ -40,7 +40,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         as: "Empleado",
       });
       Llamada.belongsTo(models.Cliente, {
-        foreignKey: "IdCliente",
+        foreignKey: "Celular",
         as: "Cliente",
       });
     }
