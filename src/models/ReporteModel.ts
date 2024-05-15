@@ -10,6 +10,7 @@ interface ReporteAttibutes{
     IdReporte: number;
     FechaHora: string;
     Prioridad: PrioridadEnum;
+    Descripcion: string;
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -17,6 +18,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         public IdReporte!:number;
         public FechaHora!:string;
         public Prioridad!:PrioridadEnum;
+        public Descripcion!:string;
 
         static associate(models: any){
             Reporte.belongsTo(models.Zona,{
@@ -53,6 +55,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
             values: Object.values(PrioridadEnum),
             allowNull: false,
             defaultValue: PrioridadEnum.Baja
+        },
+        Descripcion: {
+            type: DataTypes.STRING,
+            allowNull: false
         }
     }, {
         sequelize, 
