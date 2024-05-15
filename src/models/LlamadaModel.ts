@@ -16,7 +16,7 @@ enum AsuntoEnum{
 }
 
 interface LlamadaAttributes {
-  IdLlamada: number;
+  IdLlamada: string;
   FechaHora: string;
   Notas: string;
   Estado: EstadoEnum;
@@ -28,7 +28,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     extends Model<LlamadaAttributes>
     implements LlamadaAttributes
   {
-    public IdLlamada!: number;
+    public IdLlamada!: string;
     public FechaHora!: string;
     public Notas!: string;
     public Estado!: EstadoEnum;
@@ -48,7 +48,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
   Llamada.init(
     {
       IdLlamada: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
         primaryKey: true,
         autoIncrement: true,

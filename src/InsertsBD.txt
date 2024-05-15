@@ -71,8 +71,7 @@ INSERT INTO Empleado (Rol, Nombre, ApellidoP, ApellidoM, Usuario, Contra) VALUES
 ~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, IdZona) VALUES 
-('+525540066976', 'Freddy', 'Azamar', 'López', '2000-07-23', 5);
-
+('+555240066976', 'Freddy', 'Azamar', 'López', '2000-07-23', 5),
 ('+525586117753', 'José', 'Moreno', 'Tahuilan', '1970-09-16', 19),
 ('78236472', 'Héctor', 'Martínez', 'Vazquez', '2001-02-12', 3),
 ('16535909', 'Laura', 'González', 'López', '1990-05-25', 3),
