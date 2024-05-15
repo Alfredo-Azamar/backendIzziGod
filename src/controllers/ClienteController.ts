@@ -23,6 +23,32 @@ class ClienteController extends AbstractController {
         this.router.post('/crearContrato',this.postCrearContrato.bind(this));
         this.router.put('/actualizarContrato/:id', this.putActualizarContrato.bind(this));//* NO IMPLEMENTADO EN APPS
         this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));
+        this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this)); //MAX
+    }
+
+
+    private async getConsultarCliente(req: Request, res: Response) { //MAX
+        try {
+            const { celular } = req.params;
+            await db.Cliente.findOne({
+                where: { Celular: celular },
+                attributes: ['Celular', 'Nombre', 'ApellidoP', 'ApellidoM', 'IdZona']
+            })
+                .then((cliente: any) => {
+                    if (cliente) {
+                        res.status(200).json(cliente);
+                    } else {
+                        res.status(404).send("Cliente no encontrado");
+                    }
+                })
+                .catch((err: any) => {
+                    console.log(err);
+                    res.status(500).send('Internal server error' + err);
+                });
+        } catch(error:any) {
+            console.log(error);
+            res.status(500).send('Internal server error'+error);
+        }
     }
 
     private getTest(req: Request,res: Response){

@@ -20,6 +20,7 @@ class LlamadaController extends AbstractController {
         this.router.post('/crearLlamada',this.postCrearLlamada.bind(this));
         this.router.delete('/eliminarLlamada/:id',this.deleteBorrarLlamada.bind(this));
         this.router.post('/crearIncidencia',this.postCrearIncidencia.bind(this));
+        this.router.post('/crearEncuesta',this.postCrearEncuesta.bind(this));
     }
     
     private getTest(req: Request,res: Response){
@@ -72,6 +73,18 @@ class LlamadaController extends AbstractController {
             await db.Incidencia.create(req.body); //Insert
             console.log("Incidencia creada");
             res.status(200).send("<h1>Incidencia creada</h1>");
+        }catch(err){
+            console.log(err);
+            res.status(500).send('Internal server error'+err);
+        }
+    }
+
+    private async postCrearEncuesta(req: Request,res: Response){
+        try{
+            console.log(req.body);
+            await db.Encuesta.create(req.body); //Insert
+            console.log("Encuesta creada");
+            res.status(200).send("<h1>Encuesta creada</h1>");
         }catch(err){
             console.log(err);
             res.status(500).send('Internal server error'+err);

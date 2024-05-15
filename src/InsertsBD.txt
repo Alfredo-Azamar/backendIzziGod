@@ -1,0 +1,97 @@
+Inserts para la Base de Datos
+
+--------- CONSOLA BD ---------
+
+~~~~~~~~~~~~~~~~~~~~~~~ Zona ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO Zona (Nombre) VALUES 
+('Álvaro Obregón'), 
+('Azcapotzalco'),
+('Barrientos'),
+('Benito Juárez'), 
+('Ciudad Satélite'),
+('Coyoacán'), 
+('Cuajimalpa de Morelos'), 
+('Cuauhtémoc'), 
+('Gustavo A. Madero'), 
+('Iztacalco'), 
+('Iztapalapa'), 
+('La Magdalena Contreras'),
+('Lago de Guadalupe'),
+('Los Bastones'),
+('Lomas Verdes, Primera Sección'),
+('Lomas Verdes, Segunda Sección'),
+('Lomas Verdes, Tercera Sección'),
+('Lomas Verdes, Cuarta Sección'),
+('Miguel Hidalgo'), 
+('Milpa Alta'), 
+('Tláhuac'), 
+('Tlalpan'),
+('Tlanepantla de Baz'),
+('Venustiano Carranza'), 
+('Xochimilco');
+
+
+~~~~~~~~~~~~~~~~~~~~~~~ Paquete ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO Paquete (Nombre, Precio) VALUES 
+('Telefonía', 560), 
+('Televisión', 600), 
+('Internet', 800);
+
+
+~~~~~~~~~~~~~~~~~~~~~~~ Incidencia ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO Incidencia (Nombre) VALUES 
+('Transformador roto'), 
+('No conexión'), 
+('Módem roto'), 
+('Cable suelto, en calle'), 
+('Perro mordió cable'),
+('Interferencia en la señal de TV'), 
+('Línea telefónica con ruido'), 
+('Velocidad de internet baja'), 
+('Corte intermitente de servicio'), 
+('No hay tono en la línea telefónica'), 
+('Canal de TV no disponible'), 
+('Problemas con la facturación'), 
+('Servicio no instalado después de la fecha prometida'), 
+('Problemas con el decodificador de TV'), 
+('Problemas con el router de internet');
+
+
+~~~~~~~~~~~~~~~~~~~~~~~ Empleado ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO Empleado (Rol, Nombre, ApellidoP, ApellidoM, Usuario, Contra) VALUES 
+('supervisor', 'Lorena', 'Delgado', 'Mendoza', 'LoreDM', '1234Password'),
+('agente', 'Pancho', 'Ramirez', 'Sosa', 'RamPancho', 'Password1234'),
+('agente', 'Luisa', 'González', 'Martínez', 'LuisaGM', 'SecurePass5678');
+
+
+~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, IdZona) VALUES 
+('+525540066976', 'Freddy', 'Azamar', 'López', '2000-07-23', 5);
+
+('+525586117753', 'José', 'Moreno', 'Tahuilan', '1970-09-16', 19),
+('78236472', 'Héctor', 'Martínez', 'Vazquez', '2001-02-12', 3),
+('16535909', 'Laura', 'González', 'López', '1990-05-25', 3),
+('15237817', 'Ana', 'Sánchez', 'Gutiérrez', '1992-07-20', 3),
+('22235682', 'Javier', 'Torres', 'Mendoza', '1980-01-30', 3),
+('25616832', 'Carlos', 'Pérez', 'Ramírez', '1985-10-15', 3);
+
+
+~~~~~~~~~~~~~~~~~~~~~~~ Contrato ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO Contrato (Fecha, Celular, IdPaquete) VALUES 
+('2024-02-03', '78236472', 2),
+('2024-03-23', '16535909', 1),
+('2024-03-21', '15237817', 3),
+('2024-03-29', '22235682', 2),
+('2024-03-29', '22235682', 3),
+('2024-03-30', '25616832', 3);
+
+~~~~~~~~~~~~~~~~~~~~~~~ Reporte ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO Incidencia (FechaHora, Prioridad, IdZona, Celular, IdEmpleado, IdIncidencia) VALUES 
+('2024-05-05 20:12:23', 'alta', 3, '78236472', 2, 1);
