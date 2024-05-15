@@ -51,7 +51,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.STRING,
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true,
       },
       FechaHora: {
         type: DataTypes.DATE,
