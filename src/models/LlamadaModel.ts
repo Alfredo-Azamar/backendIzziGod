@@ -2,9 +2,10 @@ import { Model, Sequelize } from "sequelize";
 
 enum EstadoEnum{
   Inactivo = "inactivo",
-  Positivo = "positivo",
-  Preventivo = "preventivo",
-  Critico = "critico"
+  Mixed = "mixed",
+  Negative = "negative",
+  Neutral = "neutral",
+  Positive = "positive",
 }
 
 enum AsuntoEnum{
@@ -21,6 +22,7 @@ interface LlamadaAttributes {
   Notas: string;
   Estado: EstadoEnum;
   Asunto: AsuntoEnum;
+  Duracion: number;
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -33,6 +35,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     public Notas!: string;
     public Estado!: EstadoEnum;
     public Asunto!: AsuntoEnum;
+    public Duracion!: number;
 
     static associate(models: any) {
       Llamada.belongsTo(models.Empleado, {
@@ -70,6 +73,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.ENUM,
         values: Object.values(AsuntoEnum),
         allowNull: false,
+      },
+      Duracion: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
     },
     {

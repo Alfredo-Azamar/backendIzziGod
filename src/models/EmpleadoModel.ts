@@ -6,7 +6,7 @@ export enum RolEnum {
 }
 
 interface EmpleadoAttributes {
-  IdEmpleado: number;
+  IdEmpleado: string;
   Rol: RolEnum;
   Nombre: string;
   ApellidoP: string;
@@ -20,7 +20,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     extends Model<EmpleadoAttributes>
     implements EmpleadoAttributes
   {
-    public IdEmpleado!: number;
+    public IdEmpleado!: string;
     public Rol!: RolEnum;
     public Nombre!: string;
     public ApellidoP!: string;
@@ -31,10 +31,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
   Empleado.init(
     {
       IdEmpleado: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true,
       },
       Rol: {
         type: DataTypes.ENUM,
