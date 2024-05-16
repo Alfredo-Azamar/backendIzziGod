@@ -39,7 +39,6 @@ class EmpleadoController extends AbstractController {
     try {
       const { id } = req.params;
 
-      // Verificar si el usuario existe antes de buscar sus llamadas
       const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
       });
@@ -48,14 +47,12 @@ class EmpleadoController extends AbstractController {
         return res.status(404).send("El empleado no existe");
       }
 
-      // Ahora que sabemos que el empleado existe, podemos proceder a buscar sus llamadas
       const llamadasEmpleado = await db.Llamada.findAll({
         where: { IdEmpleado: id },
-        attributes: ["IdLlamada"], // Solo necesitamos el ID de la llamada para obtener las encuestas
+        attributes: ["IdLlamada"],
       });
 
       if (llamadasEmpleado && llamadasEmpleado.length > 0) {
-        // Ahora, para cada llamada del empleado, obtenemos las encuestas asociadas y calculamos el promedio
         let sumatoriaCalificaciones = 0;
         let totalLlamadas = 0;
 
@@ -75,7 +72,6 @@ class EmpleadoController extends AbstractController {
           }
         }
 
-        // Calculamos el promedio general
         const promedioGeneral =
           totalLlamadas > 0 ? sumatoriaCalificaciones / totalLlamadas : 0;
 
