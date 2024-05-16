@@ -29,33 +29,63 @@ class EmpleadoController extends AbstractController {
       "/calificacionPromedio/:id",
       this.getCalificacionPromedio.bind(this)
     );
+    this.router.get(
+      "/consultarLlamadasEmpleado/:id",
+      this.getSumLlamadasEmpleado.bind(this)
+    );
   }
 
   private async getCalificacionPromedio(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      //llamadas tendra un array con las llamadas del empleado, y un array de encuestas
-      // asosiada a las llamadas
-      const llamadas = await db.Llamada.findAll({
+
+      // Verificar si el usuario existe antes de buscar sus llamadas
+      const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
-        include: [{
-            model: db.Encuesta,
-            as: "Encuestas"
-        }]
       });
 
-      // calificaiones tendra un array con todas las calificaciones de las encuestas
-      const calificaciones: number[] = llamadas.flatMap((llamada: any) => {
-        return llamada.Encuestas.map((encuesta: any) => encuesta.Calificacion);
+      if (!empleado) {
+        return res.status(404).send("El empleado no existe");
+      }
+
+      // Ahora que sabemos que el empleado existe, podemos proceder a buscar sus llamadas
+      const llamadasEmpleado = await db.Llamada.findAll({
+        where: { IdEmpleado: id },
+        attributes: ["IdLlamada"], // Solo necesitamos el ID de la llamada para obtener las encuestas
       });
 
-      const promedio = calificaciones.reduce((sum, cal) => sum + cal, 0) / calificaciones.length;
+      if (llamadasEmpleado && llamadasEmpleado.length > 0) {
+        // Ahora, para cada llamada del empleado, obtenemos las encuestas asociadas y calculamos el promedio
+        let sumatoriaCalificaciones = 0;
+        let totalLlamadas = 0;
 
-      res.status(200).json({ promedio });
+        for (const llamada of llamadasEmpleado) {
+          const encuestasLlamada = await db.Encuesta.findAll({
+            where: { IdLlamada: llamada.IdLlamada },
+            attributes: ["Calificacion"],
+          });
 
+          if (encuestasLlamada && encuestasLlamada.length > 0) {
+            const sumCalificacionesLlamada = encuestasLlamada.reduce(
+              (sum: number, encuesta: any) => sum + encuesta.Calificacion,
+              0
+            );
+            sumatoriaCalificaciones += sumCalificacionesLlamada;
+            totalLlamadas += encuestasLlamada.length;
+          }
+        }
+
+        // Calculamos el promedio general
+        const promedioGeneral =
+          totalLlamadas > 0 ? sumatoriaCalificaciones / totalLlamadas : 0;
+
+        res.status(200).json({ promedioGeneral });
+      } else {
+        res.status(404).send("No se encontraron llamadas para este empleado");
+      }
     } catch (error: any) {
       console.log(error);
-      res.status(500).send("Internal server error" + error);
+      res.status(500).send("Error interno del servidor: " + error);
     }
   }
 
@@ -66,6 +96,35 @@ class EmpleadoController extends AbstractController {
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Internal server error" + error);
+    }
+  }
+
+  private async getSumLlamadasEmpleado(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      //llamadas tendra un array con las llamadas del empleado, y un array de encuestas
+      // asosiada a las llamadas
+      const llamadas = await db.Llamada.findAll({
+        where: { IdEmpleado: id }, // Busca las llamadas del empleado
+        attributes: [
+          "IdEmpleado", // Selecciona el id del empleado
+          [
+            db.Sequelize.fn("COUNT", db.Sequelize.col("IdLlamada")),
+            "NumeroLlamadas",
+          ], // Cuenta el número de llamadas
+        ],
+        group: ["IdEmpleado"], // Agrupa por empleado
+      });
+
+      if (llamadas && llamadas.length > 0) {
+        // Si hay llamadas...
+        res.status(200).json(llamadas); // ... manda las llamadas.
+      } else {
+        res.status(404).send("Empleado no encontrado"); // Si no, manda un error.
+      }
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error); // Error interno del servidor.
     }
   }
 
