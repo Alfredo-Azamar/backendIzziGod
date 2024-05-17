@@ -33,6 +33,27 @@ class EmpleadoController extends AbstractController {
       "/consultarLlamadasEmpleado/:id",
       this.getSumLlamadasEmpleado.bind(this)
     );
+    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
+  }
+
+  private async getConsultarEmpleado(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const empleado = await db.Empleado.findOne({
+        where: { IdEmpleado: id },
+      });
+
+      if (empleado) {
+        res.status(200).json(empleado);
+      } else {
+        res.status(404).send("El empleado no existe");
+      }
+
+    } catch(error: any) {
+      console.log(error);
+      res.status(500).send("Error interno del servidor: " + error);
+    }
   }
 
   private async getCalificacionPromedio(req: Request, res: Response) {
