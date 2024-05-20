@@ -1,6 +1,6 @@
 import { Model, Sequelize } from "sequelize";
 
-enum EstadoEnum{
+enum SentimentEnum{
   Inactivo = "inactivo",
   Mixed = "mixed",
   Negative = "negative",
@@ -20,9 +20,10 @@ interface LlamadaAttributes {
   IdLlamada: string;
   FechaHora: string;
   Notas: string;
-  Estado: EstadoEnum;
+  Duracion: string;
+  Estado: boolean;
+  Sentiment: SentimentEnum;
   Asunto: AsuntoEnum;
-  Duracion: number;
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -33,9 +34,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
     public IdLlamada!: string;
     public FechaHora!: string;
     public Notas!: string;
-    public Estado!: EstadoEnum;
+    public Duracion!: string;
+    public Estado!: boolean;
+    public Sentiment!: SentimentEnum;
     public Asunto!: AsuntoEnum;
-    public Duracion!: number;
 
     static associate(models: any) {
       Llamada.belongsTo(models.Empleado, {
@@ -63,20 +65,24 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      Duracion: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       Estado: {
-        type: DataTypes.ENUM,
-        values: Object.values(EstadoEnum),
+        type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: EstadoEnum.Inactivo,
+      },
+      Sentiment: {
+        type: DataTypes.ENUM,
+        values: Object.values(SentimentEnum),
+        allowNull: false,
+        defaultValue: SentimentEnum.Inactivo,
       },
       Asunto: {
         type: DataTypes.ENUM,
         values: Object.values(AsuntoEnum),
         allowNull: false,
-      },
-      Duracion: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
       },
     },
     {

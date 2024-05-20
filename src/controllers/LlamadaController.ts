@@ -21,8 +21,55 @@ class LlamadaController extends AbstractController {
         this.router.delete('/eliminarLlamada/:id',this.deleteBorrarLlamada.bind(this));
         this.router.post('/crearIncidencia',this.postCrearIncidencia.bind(this));
         this.router.post('/crearEncuesta',this.postCrearEncuesta.bind(this));
+        this.router.get('/infoTarjetas/:idLlamada',this.getInfoTarjetas.bind(this));
     }
     
+    private async getInfoTarjetas(req: Request,res: Response){
+        try{
+            // let info = {
+            //     totalLlamadas: await db.Llamada.count(),
+            //     totalIncidencias: await db.Incidencia.count(),
+            //     totalEncuestas: await db.Encuesta.count()
+            // }
+            // res.status(200).json(info);
+            const {idLlamada} = req.params;
+            let llamada = await db.Llamada.findOne({
+                where: { IdLlamada: idLlamada },
+                attributes: ['Asunto', 'Sentiment'],
+                include: [
+                    {
+                        model: db.Cliente,
+                        as: "Cliente",
+                        attributes: ['Nombre', 'ApellidoP'],
+                        include: [
+                            {
+                                model: db.Zona,
+                                as: "Zona",
+                                attributes: ['Nombre']
+                            }
+                        ]
+                    },
+                    {
+                        model: db.Empleado,
+                        as: "Empleado",
+                        attributes: ['Nombre', 'ApellidoP'],
+                    }
+                ]
+            });
+
+            //Si no la encuentra
+            if (llamada) {
+                res.status(200).json(llamada);
+            } else {
+                res.status(404).send('Llamada no encontrada');
+            }
+        }catch(err){
+            console.log(err);
+            res.status(500).send('Internal server error'+err);
+        }
+    }
+
+
     private getTest(req: Request,res: Response){
         try{
             console.log("Prueba exitosa");
