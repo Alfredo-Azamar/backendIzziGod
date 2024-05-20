@@ -22,6 +22,7 @@ class LlamadaController extends AbstractController {
         this.router.post('/crearIncidencia',this.postCrearIncidencia.bind(this));
         this.router.post('/crearEncuesta',this.postCrearEncuesta.bind(this));
         this.router.get('/infoTarjetas/:idLlamada',this.getInfoTarjetas.bind(this));
+        this.router.put('/actualizarLlamada/:id',this.putActualizarLlamada.bind(this));
     }
     
     private async getInfoTarjetas(req: Request,res: Response){
@@ -67,10 +68,6 @@ class LlamadaController extends AbstractController {
             console.log(err);
             res.status(500).send('Internal server error'+err);
         }
-    }
-
-
-        this.router.put('/actualizarLlamada/:id',this.putActualizarLlamada.bind(this));
     }
     
     private async putActualizarLlamada(req: Request,res: Response){
