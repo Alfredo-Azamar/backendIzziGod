@@ -4,11 +4,17 @@ import AbstractController from '../controllers/AbstractController';
 import db from '../models';
 import cors from 'cors';
 
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import * as socketIo from 'socket.io';
+
 class Server{
     //Atributos de instancia
     private app: express.Application;
     private port: number;
     private env:string;
+    private server:any;
+    private io:any;
     //Metodos de instancia
 
     constructor(appInit:{port:number;env:string;middlewares:any[];controllers:AbstractController[]}){
@@ -16,9 +22,18 @@ class Server{
         this.port = appInit.port;
         this.env = appInit.env;
         this.loadmiddlewares(appInit.middlewares);
-        this.app.use(cors());
         this.loadRoutes(appInit.controllers);
-        this.connectDB();        
+        this.connectDB();
+        
+        this.app.use(cors());
+        this.server = createServer(this.app);
+        this.io = new SocketIOServer(this.server, {
+            cors: {
+                origin: "*",
+            },
+        });
+        this.app.set('socketio', this.io);
+        this.setupSocketIO();
         
     }
 
@@ -46,6 +61,15 @@ class Server{
         this.app.listen(this.port,()=>{
             console.log(`Server running on port ${this.port}`);
         })       
+    }
+
+    private setupSocketIO() {
+        this.io.on('connection', (socket: socketIo.Socket) => {
+            console.log('A user connected');
+            socket.on('disconnect', () => {
+                console.log('User disconnected');
+            });
+        });
     }
 
 }

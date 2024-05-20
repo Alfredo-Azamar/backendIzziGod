@@ -22,7 +22,7 @@ class LlamadaController extends AbstractController {
         this.router.post('/crearIncidencia',this.postCrearIncidencia.bind(this));
         this.router.post('/crearEncuesta',this.postCrearEncuesta.bind(this));
         this.router.get('/infoTarjetas/:idLlamada',this.getInfoTarjetas.bind(this));
-        this.router.put('/actualizarLlamada/:id',this.putActualizarLlamada.bind(this));
+        this.router.put('/actualizarLlamada',this.putActualizarLlamada.bind(this));
     }
     
     private async getInfoTarjetas(req: Request,res: Response){
@@ -72,12 +72,19 @@ class LlamadaController extends AbstractController {
     
     private async putActualizarLlamada(req: Request,res: Response){
         try {
-            const {id} = req.params;
+            const {id} = req.body;
             const {IdEmpleado} = req.body;
-            
-            await db.Llamada.update({ IdEmpleado }, { where: { IdLlamada: id } });
-            res.status(200).send("<h1>Llamada actualizada</h1>");
+            const actLlamada = await db.Llamada.update({ IdEmpleado }, { where: { IdLlamada: id } });
 
+            // Emitir evento de socket
+            const io = req.app.get('socketio');
+            if (io) {
+                io.emit('newCall', actLlamada);
+            } else {
+                console.log('Socket.IO no está disponible');
+            }
+
+            res.status(200).send("<h1>Llamada actualizada</h1>");
         } catch (error: any) {
             console.log(error);
             res.status(500).send('Internal server error'+error);
@@ -105,15 +112,24 @@ class LlamadaController extends AbstractController {
         }
     }
     
-    private async postCrearLlamada(req: Request,res: Response){
-        try{
+    private async postCrearLlamada(req: Request, res: Response) {
+        try {
             console.log(req.body);
-            await db.Llamada.create(req.body); //Insert
+            const nuevaLlamada = await db.Llamada.create(req.body); //Insert
             console.log("Llamada creada");
+
+            // Emitir evento de socket
+            const io = req.app.get('socketio');
+            if (io) {
+                io.emit('newCall', nuevaLlamada);
+            } else {
+                console.log('Socket.IO no está disponible');
+            }
+
             res.status(200).send("<h1>Llamada creada</h1>");
-        }catch(err){
+        } catch (err) {
             console.log(err);
-            res.status(500).send('Internal server error'+err);
+            res.status(500).send('Internal server error' + err);
         }
     }
 
