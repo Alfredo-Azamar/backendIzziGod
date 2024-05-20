@@ -21,8 +21,23 @@ class LlamadaController extends AbstractController {
         this.router.delete('/eliminarLlamada/:id',this.deleteBorrarLlamada.bind(this));
         this.router.post('/crearIncidencia',this.postCrearIncidencia.bind(this));
         this.router.post('/crearEncuesta',this.postCrearEncuesta.bind(this));
+        this.router.put('/actualizarLlamada/:id',this.putActualizarLlamada.bind(this));
     }
     
+    private async putActualizarLlamada(req: Request,res: Response){
+        try {
+            const {id} = req.params;
+            const {IdEmpleado} = req.body;
+            
+            await db.Llamada.update({ IdEmpleado }, { where: { IdLlamada: id } });
+            res.status(200).send("<h1>Llamada actualizada</h1>");
+
+        } catch (error: any) {
+            console.log(error);
+            res.status(500).send('Internal server error'+error);
+        }
+    }
+
     private getTest(req: Request,res: Response){
         try{
             console.log("Prueba exitosa");
