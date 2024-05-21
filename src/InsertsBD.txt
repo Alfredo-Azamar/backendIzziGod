@@ -108,8 +108,7 @@ INSERT INTO Reporte (FechaHora, Prioridad, Descripcion, IdZona, Celular, IdEmple
 ~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Llamada VALUES
-('call1', '2024-05-17 12:24:43', 'No me sirve el servicio', '00:02:10', 1, 'negative', 'internet', 2, '+525540066976'),
-('call2', '2024-05-17 15:55:23', 'No me sirve el módem', '00:01:10', 0, 'neutral', 'internet', 2, '+525540066976');
+('call1', '2024-05-17 12:24:43', 'No me sirve el servicio', '00:02:10', 1, 'negative', 'internet', 2, '+525540066976');
 
 
 

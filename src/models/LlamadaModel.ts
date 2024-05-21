@@ -48,6 +48,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
         foreignKey: "Celular",
         as: "Cliente",
       });
+      Llamada.belongsTo(models.SolucionBase, {
+        foreignKey: "IdSolucion",
+        as: "Solucion",
+      });
     }
   }
   Llamada.init(
