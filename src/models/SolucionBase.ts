@@ -33,6 +33,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 primaryKey: true,
+                autoIncrement: true,
             },
             Asunto: {
                 type: DataTypes.ENUM,
