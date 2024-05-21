@@ -1,6 +1,7 @@
 import { Request,Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
+import { where } from "sequelize";
 
 class ReporteController extends AbstractController{
     //Singleton
@@ -19,6 +20,27 @@ class ReporteController extends AbstractController{
         this.router.get('/consultarReportes',this.getConsultarReportes.bind(this));
         this.router.post('/crearReporte',this.postCrearReporte.bind(this));
         this.router.delete('/eliminarReporte/:id',this.deleteBorrarReporte.bind(this));
+        this.router.get('/reportesCliente/:id',this.getReportesCliente.bind(this)); 
+    }
+
+    private async getReportesCliente(req: Request,res: Response){
+        try{
+            const {id} = req.params;
+            const reportes = await db.Reporte.findAll({
+                where: {Celular:id}
+            })
+            // Si el cliente no tiene reportes
+           
+            if (!reportes) {
+                return res.status(404).send("No tiene reportes");
+              }
+
+            res.status(200).json(reportes);
+
+        } catch (err: any) {
+            console.log(err);
+            res.status(500).send('Internal server error'+err);
+        }
     }
 
     private getTest(req: Request,res: Response){
