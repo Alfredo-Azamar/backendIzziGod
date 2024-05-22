@@ -29,6 +29,13 @@ class EmpleadoController extends AbstractController {
       "/calificacionPromedio/:id",
       this.getCalificacionPromedio.bind(this)
     );
+    // Api para mostrar el promedio de la calificacion de las llamadas de un empleado en un día
+    // Ejemplo de petición:
+    // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
+    this.router.get(
+      "/califPromDia/:id/calificaciones/:date",
+      this.getCalifPromDia.bind(this)
+    );
     this.router.get(
       "/consultarLlamadasEmpleado/:id",
       this.getSumLlamadasEmpleado.bind(this)
@@ -65,29 +72,29 @@ class EmpleadoController extends AbstractController {
 
   private async getCalificacionPromedio(req: Request, res: Response) {
     try {
-      const { id } = req.params; // Obtiene el id del empleado
+      const { id } = req.params;
 
-      const empleado = await db.Empleado.findOne({ // Busca el empleado
+      const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
       });
 
       if (!empleado) {
-        return res.status(404).send("El empleado no existe"); // Si no existe, manda un error
+        return res.status(404).send("El empleado no existe");
       }
 
-      const llamadasEmpleado = await db.Llamada.findAll({ // Busca las llamadas del empleado
-        where: { IdEmpleado: id }, // Busca por id del empleado
-        attributes: ["IdLlamada"], // Selecciona el id de la llamada
+      const llamadasEmpleado = await db.Llamada.findAll({
+        where: { IdEmpleado: id },
+        attributes: ["IdLlamada"],
       });
 
-      if (llamadasEmpleado && llamadasEmpleado.length > 0) { // Si hay llamadas...
-        let sumatoriaCalificaciones = 0; // Inicializa la sumatoria de calificaciones
-        let totalLlamadas = 0; // Inicializa el total de llamadas
+      if (llamadasEmpleado && llamadasEmpleado.length > 0) {
+        let sumatoriaCalificaciones = 0;
+        let totalLlamadas = 0;
 
-        for (const llamada of llamadasEmpleado) { // Por cada llamada...
-          const encuestasLlamada = await db.Encuesta.findAll({ // Busca las encuestas de la llamada
-            where: { IdLlamada: llamada.IdLlamada }, // Busca por id de la llamada
-            attributes: ["Calificacion"], // Selecciona la calificación
+        for (const llamada of llamadasEmpleado) {
+          const encuestasLlamada = await db.Encuesta.findAll({
+            where: { IdLlamada: llamada.IdLlamada },
+            attributes: ["Calificacion"],
           });
 
           if (encuestasLlamada && encuestasLlamada.length > 0) {
@@ -116,6 +123,56 @@ class EmpleadoController extends AbstractController {
   // Función que calcula el promedio de la calificacion de las llamadas de un empleado en un día
   private async getCalifPromDia(req: Request, res: Response) {
     try {
+      const { id, date } = req.params;
+
+      const empleado = await db.Empleado.findOne({
+        where: { IdEmpleado: id },
+      });
+
+      if (!empleado) {
+        return res.status(404).send("El empleado no existe");
+      }
+
+      // Conversión de la fecha a un formato general
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+
+      // Obtener las llamadas y las califs en una fecha específica
+      const llamadasCalif = await db.Llamada.findAll({
+        where: {
+          IdEmpleado: id,
+          Fecha: {
+            [db.Op.between]: [startDate, endDate],
+          },
+        },
+        include: {
+          model: db.Encuesta,
+          attributes: ["Calificacion"],
+        },
+      });
+
+      if (llamadasCalif.length === 0) {
+        return res
+          .status(404)
+          .send(
+            "No se encontraron llamadas para este empleado en la fecha indicada"
+          );
+      }
+
+      // calcular el promedio de calificaciones
+      let sumCalifs = 0;
+      let totalCalifs = 0;
+
+      for (const llamada of llamadasCalif) {
+        for (const encuesta of llamada.Encuestas) {
+          sumCalifs += encuesta.Calificacion;
+          totalCalifs++;
+        }
+      }
+
+      const promGeneral = totalCalifs > 0 ? sumCalifs / totalCalifs : 0;
+      res.status(200).json({ promGeneral });
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Error interno del servidor: " + error);
@@ -135,8 +192,6 @@ class EmpleadoController extends AbstractController {
   private async getSumLlamadasEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      //llamadas tendra un array con las llamadas del empleado, y un array de encuestas
-      // asosiada a las llamadas
       const llamadas = await db.Llamada.findAll({
         where: { IdEmpleado: id }, // Busca las llamadas del empleado
         attributes: [
@@ -145,6 +200,34 @@ class EmpleadoController extends AbstractController {
             db.Sequelize.fn("COUNT", db.Sequelize.col("IdLlamada")),
             "NumeroLlamadas",
           ], // Cuenta el número de llamadas
+        ],
+        group: ["IdEmpleado"], // Agrupa por empleado
+      });
+
+      if (llamadas && llamadas.length > 0) {
+        // Si hay llamadas...
+        res.status(200).json(llamadas); // ... manda las llamadas.
+      } else {
+        res.status(404).send("Empleado no encontrado"); // Si no, manda un error.
+      }
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error); // Error interno del servidor.
+    }
+  }
+
+  // Función que calcula el promedio de la duración de las llamadas de un empleado
+  private async getPromLlamadasEmpleado(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const llamadas = await db.Llamada.findAll({
+        where: { IdEmpleado: id }, // Busca las llamadas del empleado
+        attributes: [
+          "IdEmpleado", // Selecciona el id del empleado
+          [
+            db.Sequelize.fn("AVG", db.Sequelize.col("Duracion")),
+            "PromLlamadas",
+          ], // Calcula el promedio de la duración de las llamadas
         ],
         group: ["IdEmpleado"], // Agrupa por empleado
       });
