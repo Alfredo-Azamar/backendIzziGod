@@ -65,29 +65,29 @@ class EmpleadoController extends AbstractController {
 
   private async getCalificacionPromedio(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const { id } = req.params; // Obtiene el id del empleado
 
-      const empleado = await db.Empleado.findOne({
+      const empleado = await db.Empleado.findOne({ // Busca el empleado
         where: { IdEmpleado: id },
       });
 
       if (!empleado) {
-        return res.status(404).send("El empleado no existe");
+        return res.status(404).send("El empleado no existe"); // Si no existe, manda un error
       }
 
-      const llamadasEmpleado = await db.Llamada.findAll({
-        where: { IdEmpleado: id },
-        attributes: ["IdLlamada"],
+      const llamadasEmpleado = await db.Llamada.findAll({ // Busca las llamadas del empleado
+        where: { IdEmpleado: id }, // Busca por id del empleado
+        attributes: ["IdLlamada"], // Selecciona el id de la llamada
       });
 
-      if (llamadasEmpleado && llamadasEmpleado.length > 0) {
-        let sumatoriaCalificaciones = 0;
-        let totalLlamadas = 0;
+      if (llamadasEmpleado && llamadasEmpleado.length > 0) { // Si hay llamadas...
+        let sumatoriaCalificaciones = 0; // Inicializa la sumatoria de calificaciones
+        let totalLlamadas = 0; // Inicializa el total de llamadas
 
-        for (const llamada of llamadasEmpleado) {
-          const encuestasLlamada = await db.Encuesta.findAll({
-            where: { IdLlamada: llamada.IdLlamada },
-            attributes: ["Calificacion"],
+        for (const llamada of llamadasEmpleado) { // Por cada llamada...
+          const encuestasLlamada = await db.Encuesta.findAll({ // Busca las encuestas de la llamada
+            where: { IdLlamada: llamada.IdLlamada }, // Busca por id de la llamada
+            attributes: ["Calificacion"], // Selecciona la calificación
           });
 
           if (encuestasLlamada && encuestasLlamada.length > 0) {
