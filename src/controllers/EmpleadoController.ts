@@ -33,7 +33,20 @@ class EmpleadoController extends AbstractController {
       "/consultarLlamadasEmpleado/:id",
       this.getSumLlamadasEmpleado.bind(this)
     );
-    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
+    this.router.get(
+      "/consutarEmpleado/:id",
+      this.getConsultarEmpleado.bind(this)
+    );
+    // Api para mostrar el promedio de llamadas por agente
+    this.router.get(
+      "/consultarPromLlamadasEmpleado/:id",
+      this.getPromLlamadasEmpleado.bind(this)
+    );
+    // Api para mostrar el promedio de calificaciones por agente
+    this.router.get(
+      "/consultarPromCalifEmpleado/:id",
+      this.getCalifPromDia.bind(this)
+    );
   }
 
   private async getConsultarEmpleado(req: Request, res: Response) {
@@ -49,8 +62,7 @@ class EmpleadoController extends AbstractController {
       } else {
         res.status(404).send("El empleado no existe");
       }
-
-    } catch(error: any) {
+    } catch (error: any) {
       console.log(error);
       res.status(500).send("Error interno del servidor: " + error);
     }
@@ -106,13 +118,22 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Función que calcula el promedio de la calificacion de las llamadas de un empleado en un día
+  private async getCalifPromDia(req: Request, res: Response) {
+    try {
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Error interno del servidor: " + error);
+    }
+  }
+
   private getTest(req: Request, res: Response) {
     try {
       console.log("Prueba exitosa");
       res.status(200).send("<h1>Prueba exitosa</h1>");
     } catch (error: any) {
       console.log(error);
-      res.status(500).send("Internal server error" + error);
+      res.status(500).send("Internal server errorError" + error);
     }
   }
 
@@ -129,6 +150,36 @@ class EmpleadoController extends AbstractController {
             db.Sequelize.fn("COUNT", db.Sequelize.col("IdLlamada")),
             "NumeroLlamadas",
           ], // Cuenta el número de llamadas
+        ],
+        group: ["IdEmpleado"], // Agrupa por empleado
+      });
+
+      if (llamadas && llamadas.length > 0) {
+        // Si hay llamadas...
+        res.status(200).json(llamadas); // ... manda las llamadas.
+      } else {
+        res.status(404).send("Empleado no encontrado"); // Si no, manda un error.
+      }
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error); // Error interno del servidor.
+    }
+  }
+
+  // Función que calcula el promedio de la duración de las llamadas de un empleado
+  private async getPromLlamadasEmpleado(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      //llamadas tendra un array con las llamadas del empleado, y un array de encuestas
+      // asosiada a las llamadas
+      const llamadas = await db.Llamada.findAll({
+        where: { IdEmpleado: id }, // Busca las llamadas del empleado
+        attributes: [
+          "IdEmpleado", // Selecciona el id del empleado
+          [
+            db.Sequelize.fn("AVG", db.Sequelize.col("Duracion")),
+            "PromedioLlamadas",
+          ], // Calcula el promedio de la duración de las llamadas
         ],
         group: ["IdEmpleado"], // Agrupa por empleado
       });
