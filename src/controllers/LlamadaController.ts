@@ -50,7 +50,7 @@ private async getConsultarSolucion(req: Request,res: Response){
     try {
 
         const {asunto} = req.params;
-        let soluciones = await db.SolucionBase.findOne({
+        let soluciones = await db.SolucionBase.findAll({
             where: { Asunto: asunto },
             attributes: ['Asunto', 'Prioridad', 'Paso', 'Solucion'],
         });
