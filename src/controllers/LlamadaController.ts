@@ -46,19 +46,23 @@ class LlamadaController extends AbstractController {
 }
 
 private async getConsultarSolucion(req: Request,res: Response){
-    // TO DO
     try {
-
         const {asunto} = req.params;
-        let soluciones = await db.SolucionBase.findOne({
-            where: { Asunto: asunto },
-            attributes: ['Asunto', 'Prioridad', 'Paso', 'Solucion'],
-        });
+        const soluciones = await db.SolucionBase.findAll({
+          where: { Asunto: asunto },
+          attributes: ['IdSolucion', 'Nombre', 'Asunto'],
+          include: [
+              {
+                  model: db.Pasos,
+                  as: 'Pasos',
+                  attributes: ['Descripcion']
+              }
+          ]
+      });
 
-        if (soluciones.length == 0) {
+        if (!soluciones) {
             return res.status(404).send("No se encontraron soluciones");
         }
-
         res.status(200).json(soluciones);
 
     } catch(err: any) {
