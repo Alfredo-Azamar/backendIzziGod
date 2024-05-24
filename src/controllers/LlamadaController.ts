@@ -24,9 +24,37 @@ class LlamadaController extends AbstractController {
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
     this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this));
+    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this));
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
     this.router.get('/consultarSolucion/:asunto',this.getConsultarSolucion.bind(this));
     this.router.get('/consultarSoluciones',this.getConsultarSoluciones.bind(this));
+  }
+
+  private async putActualizarLlamadaFinalizada(req: Request, res: Response) { 
+    // Cambiar la duracion y estado de la llamada
+    try {
+      const {id} = req.body;
+      const {duracion} = req.body;
+      const {estado} = req.body;
+      const actLlamada = await db.Llamada.update(
+        { Duracion: duracion, Estado: estado },
+        { where: { IdLlamada: id } }
+      );
+
+      // // Emitir evento de socket
+      // const io = req.app.get("socketio");
+      // if (io) {
+      //   io.emit("newCall", actLlamada);
+      // } else {
+      //   console.log("Socket.IO no está disponible");
+      // }
+
+      res.status(200).send("<h1>Llamada actualizada (estado y duracion)</h1>");
+
+    }catch (err: any) {
+      console.log(err);
+      res.status(500).send('Internal server error'+err);
+    }
   }
 
   private async getConsultarSoluciones(req: Request, res: Response){
