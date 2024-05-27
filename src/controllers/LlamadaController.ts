@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
+import { Op } from "sequelize"; 
 
 class LlamadaController extends AbstractController {
   //Singleton
@@ -13,6 +14,7 @@ class LlamadaController extends AbstractController {
     }
     return this._instance;
   }
+
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
@@ -25,42 +27,86 @@ class LlamadaController extends AbstractController {
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
     this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this));
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
+    this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
   }
+
+  private async getLlamadasDeHoy(req: Request, res: Response) {
+    try {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0); // Establece la hora al inicio del día
+  
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999); // Establece la hora al final del día
+  
+      const llamadasDeHoy = await db.Llamada.count({
+        where: {
+          fechaHora: {
+            [Op.between]: [startOfToday, endOfToday],
+          },
+        },
+      });
+  
+      res.status(200).json({ llamadasDeHoy });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }  
 
   private async getInfoIncidencias(req: Request, res: Response) {
     try {
-        const incidencia = await db.sequelize.query(`
-        SELECT *, Nombre
+      const incidencia = await db.sequelize.query(`
+        SELECT *, Incidencia.Nombre as NombreIncidencia, Zona.Nombre as NombreZona
         FROM Reporte
         JOIN Incidencia ON Reporte.IdIncidencia = Incidencia.IdIncidencia
+        JOIN Zona ON Reporte.IdZona = Zona.IdZona
       `, { type: db.sequelize.QueryTypes.SELECT });
-  
+
       res.status(200).json(incidencia);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Internal server error" + err);
-      } 
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async getInfoIncidenciasV2() {
+    try {
+      const incidencia = await db.sequelize.query(`
+        SELECT *, Incidencia.Nombre as NombreIncidencia, Zona.Nombre as NombreZona
+        FROM Reporte
+        JOIN Incidencia ON Reporte.IdIncidencia = Incidencia.IdIncidencia
+        JOIN Zona ON Reporte.IdZona = Zona.IdZona
+      `, { type: db.sequelize.QueryTypes.SELECT });
+
+      return incidencia;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   private async getInfoTarjetasV2(req: Request, res: Response) {
     try {
       const llamadas = await db.sequelize.query(`
-        SELECT 
-            Asunto, Sentiment, Notas, 
-            Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, 
-            Zona.Nombre AS ZoneName, 
-            Empleado.Nombre, Empleado.ApellidoP, 
-            Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
-            (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas
-        FROM Llamada
-        JOIN Cliente ON Llamada.Celular = Cliente.Celular
-        JOIN Zona ON Cliente.IdZona = Zona.IdZona
-        JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
-        JOIN Contrato ON Cliente.Celular = Contrato.Celular
-        JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete
-        WHERE Llamada.Estado = true
+      SELECT 
+          Llamada.Asunto, Llamada.Sentiment, Llamada.Notas, Llamada.IdLlamada, Llamada.fechaHora AS FechaLlamada, Llamada.Estado AS EstadoLlamada, 
+          Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
+          Zona.Nombre AS ZoneName, 
+          Empleado.Nombre, Empleado.ApellidoP, 
+          Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
+          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas
+      FROM Llamada
+      JOIN Cliente ON Llamada.Celular = Cliente.Celular
+      JOIN Zona ON Cliente.IdZona = Zona.IdZona
+      JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
+      JOIN Contrato ON Cliente.Celular = Contrato.Celular
+      JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete
+      JOIN (
+          SELECT IdEmpleado, MAX(fechaHora) AS LastCallTime
+          FROM Llamada
+          GROUP BY IdEmpleado
+      ) AS LastCalls ON Llamada.IdEmpleado = LastCalls.IdEmpleado AND Llamada.fechaHora = LastCalls.LastCallTime
       `, { type: db.sequelize.QueryTypes.SELECT });
-  
+
       res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
@@ -161,26 +207,80 @@ class LlamadaController extends AbstractController {
     }
   }
 
-  private async postCrearLlamada(req: Request, res: Response) {
-    try {
-      console.log(req.body);
-      const nuevaLlamada = await db.Llamada.create(req.body); //Insert
-      console.log("Llamada creada");
+  // private async postCrearLlamada(req: Request, res: Response) {
+  //   try {
+  //     console.log(req.body);
+  //     const nuevaLlamada = await db.Llamada.create(req.body); // Insert
+  //     console.log("Llamada creada");
 
-      // Emitir evento de socket
-      const io = req.app.get("socketio");
-      if (io) {
-        io.emit("newCall", nuevaLlamada);
-      } else {
-        console.log("Socket.IO no está disponible");
-      }
+  //     // Emitir evento de socket
+  //     const io = req.app.get("socketio");
+  //     if (io) {
+  //       io.emit("reloadPage");
+  //       console.log("Evento emitido");
+  //     } else {
+  //       console.log("Socket.IO no está disponible");
+  //     }
 
-      res.status(200).send("<h1>Llamada creada</h1>");
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error" + err);
-    }
+  //     res.status(200).send("<h1>Llamada creada</h1>");
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.status(500).send("Internal server error" + err);
+  //   }
+  // }
+
+  private async getInfoTarjetasV3() {
+  try {
+    const llamadas = await db.sequelize.query(`
+    SELECT 
+        Llamada.Asunto, Llamada.Sentiment, Llamada.Notas, Llamada.IdLlamada, Llamada.fechaHora AS FechaLlamada, Llamada.Estado AS EstadoLlamada, 
+        Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
+        Zona.Nombre AS ZoneName, 
+        Empleado.Nombre, Empleado.ApellidoP, 
+        Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
+        (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas
+          FROM Llamada
+          JOIN Cliente ON Llamada.Celular = Cliente.Celular
+          JOIN Zona ON Cliente.IdZona = Zona.IdZona
+          JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
+          JOIN Contrato ON Cliente.Celular = Contrato.Celular
+          JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete
+          JOIN (
+        SELECT IdEmpleado, MAX(fechaHora) AS LastCallTime
+        FROM Llamada
+        GROUP BY IdEmpleado
+    ) AS LastCalls ON Llamada.IdEmpleado = LastCalls.IdEmpleado AND Llamada.fechaHora = LastCalls.LastCallTime
+    `, { type: db.sequelize.QueryTypes.SELECT });
+
+    return llamadas;
+  } catch (err) {
+    console.log(err);
+    throw new Error("Internal server error" + err);
   }
+}
+
+private async postCrearLlamada(req: Request, res: Response) {
+  try {
+    console.log(req.body);
+    const nuevaLlamada = await db.Llamada.create(req.body); // Insert
+    console.log("Llamada creada");
+
+    // Emitir evento de socket
+    const io = req.app.get("socketio");
+    if (io) {
+      const llamadas = await this.getInfoTarjetasV3();
+      io.emit("newPage", llamadas);
+      console.log("Evento emitido");
+    } else {
+      console.log("Socket.IO no está disponible");
+    }
+
+    res.status(200).send("<h1>Llamada creada</h1>");
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal server error" + err);
+  }
+}
 
   private async deleteBorrarLlamada(req: Request, res: Response) {
     try {
@@ -196,8 +296,20 @@ class LlamadaController extends AbstractController {
   private async postCrearIncidencia(req: Request, res: Response) {
     try {
       console.log(req.body);
-      await db.Incidencia.create(req.body); //Insert
-      console.log("Incidencia creada");
+      await db.Reporte.create(req.body); //Insert
+      console.log("Reporte creado");
+
+      // Emitir evento de socket
+      const io = req.app.get("socketio");
+      if (io) {
+        const incidencias = await this.getInfoIncidenciasV2();
+        io.emit("newIncidencia", incidencias);
+        console.log("Evento emitido");
+      } else {
+        console.log("Socket.IO no está disponible");
+      }
+
+
       res.status(200).send("<h1>Incidencia creada</h1>");
     } catch (err) {
       console.log(err);
