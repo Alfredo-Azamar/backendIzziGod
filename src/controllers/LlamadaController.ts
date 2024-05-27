@@ -27,7 +27,52 @@ class LlamadaController extends AbstractController {
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
     this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this));
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
+    this.router.get('/consultarSolucion/:asunto',this.getConsultarSolucion.bind(this));
+    this.router.get('/consultarSoluciones',this.getConsultarSoluciones.bind(this));
     this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
+  }
+
+  private async getConsultarSoluciones(req: Request, res: Response){
+    try {
+        let soluciones = await db["SolucionBase"].findAll();
+
+        if (soluciones.length == 0) {
+            return res.status(404).send("No se encontraron soluciones");
+        }
+
+        res.status(200).json(soluciones);
+
+    } catch(err: any) {
+        console.log(err);
+        res.status(500).send('Internal server error'+err);
+    }
+}
+
+private async getConsultarSolucion(req: Request,res: Response){
+    try {
+        const {asunto} = req.params;
+        const soluciones = await db.SolucionBase.findAll({
+          where: { Asunto: asunto },
+          attributes: ['IdSolucion', 'Nombre', 'Asunto'],
+          include: [
+              {
+                  model: db.Pasos,
+                  as: 'Pasos',
+                  attributes: ['Descripcion']
+              }
+          ]
+      });
+
+        if (!soluciones) {
+            return res.status(404).send("No se encontraron soluciones");
+        }
+        res.status(200).json(soluciones);
+
+    } catch(err: any) {
+        console.log(err);
+        res.status(500).send('Internal server error'+err);
+    
+    }
   }
 
   private async getLlamadasDeHoy(req: Request, res: Response) {
@@ -51,7 +96,7 @@ class LlamadaController extends AbstractController {
       console.log(err);
       res.status(500).send("Internal server error" + err);
     }
-  }  
+}  
 
   private async getInfoIncidencias(req: Request, res: Response) {
     try {
