@@ -88,7 +88,7 @@ class LlamadaController extends AbstractController {
     try {
       const llamadas = await db.sequelize.query(`
       SELECT 
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada,
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
           Empleado.Nombre, Empleado.ApellidoP, 
@@ -232,7 +232,7 @@ class LlamadaController extends AbstractController {
   try {
     const llamadas = await db.sequelize.query(`
       SELECT 
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada,
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
           Empleado.Nombre, Empleado.ApellidoP, 

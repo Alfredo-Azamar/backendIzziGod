@@ -6,6 +6,7 @@ import EmpleadoController from './controllers/EmpleadoController';
 import ClienteController from './controllers/ClienteController';
 import LlamadaController from './controllers/LlamadaController';
 import ReporteController from './controllers/ReporteController';
+import SNSController from './controllers/SNSController';
 
 const server = new Server({
     port: PORT,
@@ -19,7 +20,8 @@ const server = new Server({
         EmpleadoController.instance,
         ClienteController.instance,
         LlamadaController.instance,
-        ReporteController.instance
+        ReporteController.instance,
+        SNSController.instance
     ]
 });
 
