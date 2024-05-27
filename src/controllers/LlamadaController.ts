@@ -88,23 +88,22 @@ class LlamadaController extends AbstractController {
     try {
       const llamadas = await db.sequelize.query(`
       SELECT 
-          Llamada.Asunto, Llamada.Sentiment, Llamada.Notas, Llamada.IdLlamada, Llamada.fechaHora AS FechaLlamada, Llamada.Estado AS EstadoLlamada, 
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
           Empleado.Nombre, Empleado.ApellidoP, 
           Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
-          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas
-      FROM Llamada
-      JOIN Cliente ON Llamada.Celular = Cliente.Celular
-      JOIN Zona ON Cliente.IdZona = Zona.IdZona
-      JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
-      JOIN Contrato ON Cliente.Celular = Contrato.Celular
-      JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete
-      JOIN (
-          SELECT IdEmpleado, MAX(fechaHora) AS LastCallTime
-          FROM Llamada
-          GROUP BY IdEmpleado
-      ) AS LastCalls ON Llamada.IdEmpleado = LastCalls.IdEmpleado AND Llamada.fechaHora = LastCalls.LastCallTime
+          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
+      FROM Empleado
+      LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
+              SELECT MAX(L2.FechaHora) 
+              FROM Llamada AS L2 
+              WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
+      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
+      LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
+      LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
+      ORDER BY Empleado.IdEmpleado;
       `, { type: db.sequelize.QueryTypes.SELECT });
 
       res.status(200).json(llamadas);
@@ -232,24 +231,23 @@ class LlamadaController extends AbstractController {
   private async getInfoTarjetasV3() {
   try {
     const llamadas = await db.sequelize.query(`
-    SELECT 
-        Llamada.Asunto, Llamada.Sentiment, Llamada.Notas, Llamada.IdLlamada, Llamada.fechaHora AS FechaLlamada, Llamada.Estado AS EstadoLlamada, 
-        Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
-        Zona.Nombre AS ZoneName, 
-        Empleado.Nombre, Empleado.ApellidoP, 
-        Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
-        (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas
-          FROM Llamada
-          JOIN Cliente ON Llamada.Celular = Cliente.Celular
-          JOIN Zona ON Cliente.IdZona = Zona.IdZona
-          JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
-          JOIN Contrato ON Cliente.Celular = Contrato.Celular
-          JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete
-          JOIN (
-        SELECT IdEmpleado, MAX(fechaHora) AS LastCallTime
-        FROM Llamada
-        GROUP BY IdEmpleado
-    ) AS LastCalls ON Llamada.IdEmpleado = LastCalls.IdEmpleado AND Llamada.fechaHora = LastCalls.LastCallTime
+      SELECT 
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada,
+          Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
+          Zona.Nombre AS ZoneName, 
+          Empleado.Nombre, Empleado.ApellidoP, 
+          Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
+          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
+      FROM Empleado
+      LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
+              SELECT MAX(L2.FechaHora) 
+              FROM Llamada AS L2 
+              WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
+      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
+      LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
+      LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
+      ORDER BY Empleado.IdEmpleado;
     `, { type: db.sequelize.QueryTypes.SELECT });
 
     return llamadas;
