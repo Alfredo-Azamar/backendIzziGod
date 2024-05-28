@@ -1,8 +1,8 @@
-Inserts para la Base de Datos
+-- Inserts para la Base de Datos
 
 --------- CONSOLA BD ---------
 
-~~~~~~~~~~~~~~~~~~~~~~~ Zona ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Zona ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Zona (Nombre) VALUES 
 ('Álvaro Obregón'), 
@@ -32,7 +32,7 @@ INSERT INTO Zona (Nombre) VALUES
 ('Xochimilco');
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Paquete ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Paquete ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Paquete (Nombre, Precio) VALUES 
 ('Telefonía', 560), 
@@ -40,7 +40,7 @@ INSERT INTO Paquete (Nombre, Precio) VALUES
 ('Internet', 800);
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Incidencia ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Incidencia ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Incidencia (Nombre) VALUES 
 ('Transformador roto'), 
@@ -60,7 +60,7 @@ INSERT INTO Incidencia (Nombre) VALUES
 ('Problemas con el router de internet');
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Empleado ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Empleado ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Usuario, Contra) VALUES 
 ('1', 'supervisor', 'Lorena', 'Delgado', 'Mendoza', 'LoreDM', '1234Password'),
@@ -68,10 +68,10 @@ INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Usuario, Co
 ('3', 'agente', 'Luisa', 'González', 'Martínez', 'LuisaGM', 'SecurePass5678');
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
 
-('+555240066976', 'Freddy', 'Azamar', 'López', '2000-07-23', 5),
-('+525586117753', 'José', 'Moreno', 'Tahuilan', '1970-09-16', 19),
+-- ('+555240066976', 'Freddy', 'Azamar', 'López', '2000-07-23', 5),
+-- ('+525586117753', 'José', 'Moreno', 'Tahuilan', '1970-09-16', 19),
 
 
 INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, IdZona) VALUES 
@@ -83,7 +83,7 @@ INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, IdZona) VA
 ('25616832', 'Carlos', 'Pérez', 'Ramírez', '1985-10-15', 3);
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Contrato ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Contrato ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Contrato (Fecha, Celular, IdPaquete) VALUES 
 ('2024-02-02', '+525540066976', 3),
@@ -94,25 +94,43 @@ INSERT INTO Contrato (Fecha, Celular, IdPaquete) VALUES
 ('2024-03-29', '22235682', 3),
 ('2024-03-30', '25616832', 3);
 
-~~~~~~~~~~~~~~~~~~~~~~~ Reporte ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Reporte ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Reporte (FechaHora, Prioridad, Descripcion, IdZona, Celular, IdEmpleado, IdIncidencia) VALUES 
 ('2024-05-05 20:12:23', 'alta', 'El transformador de la calle Lago se rompió', 3, '78236472', 2, 1);
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Soluciones ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Soluciones ~~~~~~~~~~~~~~~~~~~~~~~
+
+INSERT INTO SolucionBase (Nombre, Asunto) VALUES 
+('Reiniciar el modém', 'internet'),
+('Checar las conexiones del módem', 'internet'),
+('Checar indicaciones led del módem', 'internet');
+
+
+INSERT INTO Pasos (Descripcion, IdSolucion) VALUES 
+('Ubicar el módem', 1),
+('Buscar el orificio de reset', 1),
+('Apretarlo durante 5 segundos', 1),
+('Revisar que el cable esté conectado', 2),
+('Revisar que el cable esté conectado', 2),
+('Revisar que el cable esté conectado', 2),
+('Revisar que el led de power esté encendido', 3),
+('Revisar que el led de power esté encendido', 3),
+('Revisar que el led de power esté encendido', 3),
+('Revisar que el led de power esté encendido', 3);
 
 
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Llamada (IdLlamada, FechaHora, Notas, Duracion, Estado, Sentiment, Asunto, IdEmpleado, Celular) VALUES
 ('call1', '2024-05-17 12:24:43', 'No me sirve el servicio', '00:02:10', 1, 'negative', 'internet', 2, '+525540066976'),
 ('call2', '2024-05-23 14:34:23', 'No me sirve el módem', '00:01:03', 0, 'neutral', 'internet', 2, '15237817');
 
 
-~~~~~~~~~~~~~~~~~~~~~~~ Encuesta ~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Encuesta ~~~~~~~~~~~~~~~~~~~~~~~
 
 
 INSERT INTO Encuesta (Pregunta, Calificacion, IdLlamada) VALUES
