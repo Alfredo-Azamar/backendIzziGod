@@ -12,6 +12,7 @@ interface EmpleadoAttributes {
   ApellidoP: string;
   ApellidoM: string;
   Usuario: string;
+  Correo: string;
   Contra: string;
 }
 
@@ -26,6 +27,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     public ApellidoP!: string;
     public ApellidoM!: string;
     public Usuario!: string;
+    public Correo!: string;
     public Contra!: string;
   }
   Empleado.init(
@@ -56,6 +58,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
       Usuario: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
+      },
+      Correo: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
       },
       Contra: {
         type: DataTypes.STRING,
