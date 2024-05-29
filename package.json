@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-connect-contact-lens": "^3.583.0",
     "@types/socket.io": "^3.0.2",
     "aws-sdk": "^2.1629.0",
     "cors": "^2.8.5",
