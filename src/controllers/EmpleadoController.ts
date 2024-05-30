@@ -34,7 +34,7 @@ class EmpleadoController extends AbstractController {
       this.getSumLlamadasEmpleado.bind(this)
     );
     this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
-  }
+    }
 
   private async getConsultarEmpleado(req: Request, res: Response) {
     try {

@@ -1,5 +1,6 @@
 import { Request,Response } from "express";
 import AbstractController from "./AbstractController";
+import db from "../models";
 
 class AuthenticationController extends AbstractController{
     
@@ -27,8 +28,31 @@ class AuthenticationController extends AbstractController{
     private async signin(req:Request,res:Response){
         const {email,password} = req.body;
         try{
-            const login = await this.cognitoService.signInUser(email,password);
-            res.status(200).send({...login.AuthenticationResult});
+            // const login = await this.cognitoService.signInUser(email,password);
+            // res.status(200).send({...login.AuthenticationResult});
+
+            // Autenticar al usuario con Cognito
+            const login = await this.cognitoService.signInUser(email, password);
+            const token = login.AuthenticationResult;
+
+
+            // Buscar información adicional del usuario en la base de datos
+            const user = await db.Empleado.findOne({
+                where: { Correo: email  },
+                attributes: ['IdEmpleado', 'Nombre', 'ApellidoP', 'ApellidoM'] // Ajusta según los atributos que necesites
+            });
+
+            if (!user) {
+                return res.status(404).send({ message: "User not found" }).end();
+            }
+
+            // Combinar y enviar la respuesta
+            res.status(200).send({
+                token,
+                user
+            });
+
+
         }catch(error:any){
             res.status(500).send({code:error.code,message:error.message}).end()
         }

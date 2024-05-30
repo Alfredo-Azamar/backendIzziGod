@@ -51,8 +51,10 @@ class LlamadaController extends AbstractController {
       // } else {
       //   console.log("Socket.IO no está disponible");
       // }
+      
 
-      res.status(200).send("<h1>Llamada actualizada (estado y duracion)</h1>");
+      res.status(200).send(actLlamada);
+      console.log("Llamada actualizada");
 
     }catch (err: any) {
       console.log(err);
