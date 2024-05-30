@@ -6,12 +6,9 @@ import EmpleadoController from './controllers/EmpleadoController';
 import ClienteController from './controllers/ClienteController';
 import LlamadaController from './controllers/LlamadaController';
 import ReporteController from './controllers/ReporteController';
-<<<<<<< HEAD
 import AuthenticationController from './controllers/AuthenticationController';
-=======
 import SNSController from './controllers/SNSController';
 import ConnectController from './controllers/ConnectController';
->>>>>>> main
 
 const server = new Server({
     port:PORT,
@@ -26,12 +23,9 @@ const server = new Server({
         ClienteController.instance,
         LlamadaController.instance,
         ReporteController.instance,
-<<<<<<< HEAD
-        AuthenticationController.instance
-=======
+        AuthenticationController.instance,
         SNSController.instance,
         ConnectController.instance
->>>>>>> main
     ]
 });
 
