@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
-import { Op } from "sequelize"; 
+import { Op } from "sequelize";
 
 class LlamadaController extends AbstractController {
   //Singleton
@@ -27,51 +27,53 @@ class LlamadaController extends AbstractController {
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
     this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this));
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
-    this.router.get('/consultarSolucion/:asunto',this.getConsultarSolucion.bind(this));
-    this.router.get('/consultarSoluciones',this.getConsultarSoluciones.bind(this));
+    this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
+    this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));
     this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
+    this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones
+    this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones
   }
 
-  private async getConsultarSoluciones(req: Request, res: Response){
+  private async getConsultarSoluciones(req: Request, res: Response) {
     try {
-        let soluciones = await db["SolucionBase"].findAll();
+      let soluciones = await db["SolucionBase"].findAll();
 
-        if (soluciones.length == 0) {
-            return res.status(404).send("No se encontraron soluciones");
-        }
+      if (soluciones.length == 0) {
+        return res.status(404).send("No se encontraron soluciones");
+      }
 
-        res.status(200).json(soluciones);
+      res.status(200).json(soluciones);
 
-    } catch(err: any) {
-        console.log(err);
-        res.status(500).send('Internal server error'+err);
+    } catch (err: any) {
+      console.log(err);
+      res.status(500).send('Internal server error' + err);
     }
-}
+  }
 
-private async getConsultarSolucion(req: Request,res: Response){
+  private async getConsultarSolucion(req: Request, res: Response) {
     try {
-        const {asunto} = req.params;
-        const soluciones = await db.SolucionBase.findAll({
-          where: { Asunto: asunto },
-          attributes: ['IdSolucion', 'Nombre', 'Asunto'],
-          include: [
-              {
-                  model: db.Pasos,
-                  as: 'Pasos',
-                  attributes: ['Descripcion']
-              }
-          ]
+      const { asunto } = req.params;
+      const soluciones = await db.SolucionBase.findAll({
+        where: { Asunto: asunto },
+        attributes: ['IdSolucion', 'Nombre', 'Asunto'],
+        include: [
+          {
+            model: db.Pasos,
+            as: 'Pasos',
+            attributes: ['Descripcion']
+          }
+        ]
       });
 
-        if (!soluciones) {
-            return res.status(404).send("No se encontraron soluciones");
-        }
-        res.status(200).json(soluciones);
+      if (!soluciones) {
+        return res.status(404).send("No se encontraron soluciones");
+      }
+      res.status(200).json(soluciones);
 
-    } catch(err: any) {
-        console.log(err);
-        res.status(500).send('Internal server error'+err);
-    
+    } catch (err: any) {
+      console.log(err);
+      res.status(500).send('Internal server error' + err);
+
     }
   }
 
@@ -79,10 +81,10 @@ private async getConsultarSolucion(req: Request,res: Response){
     try {
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0); // Establece la hora al inicio del día
-  
+
       const endOfToday = new Date();
       endOfToday.setHours(23, 59, 59, 999); // Establece la hora al final del día
-  
+
       const llamadasDeHoy = await db.Llamada.count({
         where: {
           fechaHora: {
@@ -90,13 +92,13 @@ private async getConsultarSolucion(req: Request,res: Response){
           },
         },
       });
-  
+
       res.status(200).json({ llamadasDeHoy });
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
     }
-}  
+  }
 
   private async getInfoIncidencias(req: Request, res: Response) {
     try {
@@ -251,6 +253,34 @@ private async getConsultarSolucion(req: Request,res: Response){
     }
   }
 
+  private async getAverageCallDuration(req: Request, res: Response) {
+    try {
+      let averageDuration = await db["Llamada"].findAll({
+        attributes: [[db.Sequelize.fn('AVG', db.Sequelize.col('Duracion')), 'averageDuration']]
+      });
+      res.status(200).json(averageDuration);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+
+
+  private async getNegativeCallsCount(req: Request, res: Response) {
+    try {
+      let count = await db["Llamada"].count({
+        where: { Estado: false, Sentiment: "NEGATIVE" }
+      });
+      res.status(200).json({ count });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+
+
   // private async postCrearLlamada(req: Request, res: Response) {
   //   try {
   //     console.log(req.body);
@@ -274,8 +304,8 @@ private async getConsultarSolucion(req: Request,res: Response){
   // }
 
   private async getInfoTarjetasV3() {
-  try {
-    const llamadas = await db.sequelize.query(`
+    try {
+      const llamadas = await db.sequelize.query(`
       SELECT 
           L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
@@ -295,35 +325,35 @@ private async getConsultarSolucion(req: Request,res: Response){
       ORDER BY Empleado.IdEmpleado;
     `, { type: db.sequelize.QueryTypes.SELECT });
 
-    return llamadas;
-  } catch (err) {
-    console.log(err);
-    throw new Error("Internal server error" + err);
-  }
-}
-
-private async postCrearLlamada(req: Request, res: Response) {
-  try {
-    console.log(req.body);
-    const nuevaLlamada = await db.Llamada.create(req.body); // Insert
-    console.log("Llamada creada");
-
-    // Emitir evento de socket
-    const io = req.app.get("socketio");
-    if (io) {
-      const llamadas = await this.getInfoTarjetasV3();
-      io.emit("newPage", llamadas);
-      console.log("Evento emitido");
-    } else {
-      console.log("Socket.IO no está disponible");
+      return llamadas;
+    } catch (err) {
+      console.log(err);
+      throw new Error("Internal server error" + err);
     }
-
-    res.status(200).send("<h1>Llamada creada</h1>");
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Internal server error" + err);
   }
-}
+
+  private async postCrearLlamada(req: Request, res: Response) {
+    try {
+      console.log(req.body);
+      const nuevaLlamada = await db.Llamada.create(req.body); // Insert
+      console.log("Llamada creada");
+
+      // Emitir evento de socket
+      const io = req.app.get("socketio");
+      if (io) {
+        const llamadas = await this.getInfoTarjetasV3();
+        io.emit("newPage", llamadas);
+        console.log("Evento emitido");
+      } else {
+        console.log("Socket.IO no está disponible");
+      }
+
+      res.status(200).send("<h1>Llamada creada</h1>");
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
 
   private async deleteBorrarLlamada(req: Request, res: Response) {
     try {

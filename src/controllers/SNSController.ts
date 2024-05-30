@@ -35,10 +35,9 @@ class SNSController extends AbstractController {
             // Crear un nuevo objeto SNS
             const sns = new AWS.SNS();
 
-            // Suscribir el número de teléfono al tema
             const params = {
                 Protocol: 'sms',
-                TopicArn: 'arn:aws:sns:us-east-1:905418447691:Incidencias', // ARN del tema al que deseas suscribir el número de teléfono
+                TopicArn: 'arn:aws:sns:us-east-1:905418447691:Incidencias', 
                 Endpoint: phoneNumber // Número de teléfono al que deseas suscribir
             };
 

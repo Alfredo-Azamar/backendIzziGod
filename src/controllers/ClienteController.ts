@@ -27,7 +27,6 @@ class ClienteController extends AbstractController {
         this.router.get('/telefonoPorZona/:nombreZona', this.getTelefonoPorZona.bind(this));
     }
 
-
     private async getConsultarCliente(req: Request, res: Response) { //MAX
         try {
             const { celular } = req.params;
