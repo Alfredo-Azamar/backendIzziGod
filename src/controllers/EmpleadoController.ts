@@ -34,7 +34,34 @@ class EmpleadoController extends AbstractController {
       this.getSumLlamadasEmpleado.bind(this)
     );
     this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
+      this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
+  }
+
+  private async agentesActivos(req: Request, res: Response) {
+    try {
+      const llamadas = await db.sequelize.query(`
+      SELECT 
+          SUM(CASE WHEN L.Estado = 1 THEN 1 ELSE 0 END) AS Activos,
+          SUM(CASE WHEN L.Estado = 0 THEN 1 ELSE 0 END) AS Inactivos
+      FROM Empleado
+      LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
+              SELECT MAX(L2.FechaHora) 
+              FROM Llamada AS L2 
+              WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
+      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
+      LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
+      LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete
+      ORDER BY Empleado.IdEmpleado;
+
+      `, { type: db.sequelize.QueryTypes.SELECT });
+
+      res.status(200).json(llamadas);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
     }
+  }
 
   private async getConsultarEmpleado(req: Request, res: Response) {
     try {
