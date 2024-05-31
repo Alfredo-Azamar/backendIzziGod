@@ -26,13 +26,13 @@ class LlamadaController extends AbstractController {
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
     this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this));
-    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this));
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
     this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
     this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));
     this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
     this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones
     this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones
+    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this));
   }
 
   private async putActualizarLlamadaFinalizada(req: Request, res: Response) { 
