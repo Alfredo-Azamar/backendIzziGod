@@ -25,7 +25,7 @@ class LlamadaController extends AbstractController {
     this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
-    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this));
+    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this)); //Socket
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
     this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
     this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));
