@@ -70,7 +70,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         allowNull: false,
       },
       Duracion: {
-        type: DataTypes.STRING,
+        type: DataTypes.TIME,
         allowNull: true,
       },
       Estado: {

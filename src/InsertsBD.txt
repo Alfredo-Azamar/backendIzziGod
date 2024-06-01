@@ -62,10 +62,10 @@ INSERT INTO Incidencia (Nombre) VALUES
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Empleado ~~~~~~~~~~~~~~~~~~~~~~~
 
-INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Usuario, Correo, Contra) VALUES 
-('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'KariCM', 'karicm@gmail.com', '1234Password'),
-('2', 'agente', 'Pancho', 'Ramirez', 'Sosa', 'RamPancho', 'panchoRam@gmail.com', 'Password1234'),
-('3', 'agente', 'Luisa', 'González', 'Martínez', 'LuisaGM', 'LuisaGZ@gmail.com', 'SecurePass5678');
+INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo, Contra) VALUES 
+('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'karicm@gmail.com', '1234Password'),
+('joahan11', 'agente', 'Javier', 'García', 'Fernández', 'A01748222@tec.mx', 'Password1234'),
+('3', 'agente', 'Luisa', 'González', 'Martínez', 'LuisaGZ@gmail.com', 'SecurePass5678');
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,6 +75,7 @@ INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, IdZona) VA
 ('+525513604788', 'Lore', 'Delgado', 'Mendoza', '1990-02-16', 5),
 ('+525516399531', 'Héctor', 'González', 'Sánchez', '1890-10-29', 5),
 ('+525586117753', 'José Antonio', 'Moreno', 'Tahuilan', '1918-05-23', 5),
+('+525584016051', 'Joahan', 'García', 'Fernández', '1998-05-25', 5),
 ('15237817', 'Ana', 'Sánchez', 'Gutiérrez', '1992-07-20', 3),
 ('22235682', 'Javier', 'Torres', 'Mendoza', '1980-01-30', 3),
 ('25616832', 'Carlos', 'Pérez', 'Ramírez', '1985-10-15', 3);
@@ -89,13 +90,15 @@ INSERT INTO Contrato (Fecha, Celular, IdPaquete) VALUES
 ('2024-03-21', '+525516399531', 3), 
 ('2024-03-29', '+525540066976', 2),
 ('2024-03-29', '+525540066976', 3),
-('2024-03-30', '+525586117753', 3);
+('2024-03-30', '+525586117753', 3),
+('2024-03-31', '+525584016051', 3);
+
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Reporte ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Reporte (FechaHora, Prioridad, Descripcion, IdZona, Celular, IdEmpleado, IdIncidencia) VALUES 
-('2024-05-05 20:12:23', 'alta', 'El transformador de la calle Lago se rompió', 3, '+525540066976', 2, 1),
-('2024-05-28 15:12:23', 'media', 'No hay conexión por múltiples días', 5, '+525513604788', 2, 2);
+('2024-05-05 20:12:23', 'alta', 'El transformador de la calle Lago se rompió', 3, '+525540066976', 'joahan11', 1),
+('2024-05-28 15:12:23', 'media', 'No hay conexión por múltiples días', 5, '+525513604788', 'joahan11', 2);
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Soluciones ~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,8 +139,8 @@ INSERT INTO Pasos (Descripcion, IdSolucion) VALUES
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Llamada (IdLlamada, FechaHora, Notas, Duracion, Estado, Sentiment, Asunto, IdEmpleado, Celular) VALUES
-('call1', '2024-05-17 12:24:43', 'No me sirve el servicio', '00:02:10', 1, 'negative', 'internet', 2, '+525540066976'),
-('call2', '2024-05-23 14:34:23', 'No me sirve el módem', '00:00:00', 0, 'neutral', 'internet', 2, '+525513604788');
+('call1', '2024-05-17 12:24:43', 'No me sirve el servicio', '00:02:10', 1, 'negative', 'internet', 'joahan11', '+525540066976'),
+('call2', '2024-05-23 14:34:23', 'No me sirve el módem', '00:00:00', 0, 'neutral', 'internet', 'joahan11', '+525513604788');
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Encuesta ~~~~~~~~~~~~~~~~~~~~~~~
