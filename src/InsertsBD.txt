@@ -101,6 +101,8 @@ INSERT INTO Reporte (FechaHora, Prioridad, Descripcion, IdZona, Celular, IdEmple
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Soluciones ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO SolucionBase (Nombre, Asunto) VALUES 
+('Requiere técnico', 'soporte'),
+('Se presentó incidencia', 'soporte'),
 ('Reiniciar el modém', 'internet'),
 ('Checar las conexiones del módem', 'internet'),
 ('Checar indicaciones led del módem', 'internet'),
@@ -110,25 +112,25 @@ INSERT INTO SolucionBase (Nombre, Asunto) VALUES
 ('Checar señal decodificador', 'television');
 
 INSERT INTO Pasos (Descripcion, IdSolucion) VALUES 
-('Ubicar el módem', 1),
-('Buscar el orificio de reset', 1),
-('Apretarlo durante 5 segundos', 1),
-('Revisar que el cable de corriente esté conectado', 2),
-('Revisar que el cable de internet esté conectado', 2),
-('Revisar que el cable de ethernet esté conectado', 2),
-('Revisar que el led de power esté encendido', 3),
-('Revisar que el led de internet esté encendido', 3),
-('Revisar que el led de ethernet esté encendido', 3),
-('Revisar que el led de wifi esté encendido', 3),
-('Apaga el teléfono', 4),
-('Espera al menos 30 segundos', 4),
-('Enciende el teléfono', 4),
-('Asegúrate de que tienes buena señal', 5),
-('Si la señal es débil, intenta moverte a un lugar con mejor señal', 5),
-('Asegúrate de que todos los cables estén bien conectados', 6),
-('Si hay algún cable suelto, reconéctalo', 6),
-('Asegúrate de que la caja de cable tiene buena señal', 7),
-('Si la señal es débil, intenta mover la caja de cable a un lugar con mejor señal', 7);
+('Ubicar el módem', 3),
+('Buscar el orificio de reset', 3),
+('Apretarlo durante 5 segundos', 3),
+('Revisar que el cable de corriente esté conectado', 4),
+('Revisar que el cable de internet esté conectado', 4),
+('Revisar que el cable de ethernet esté conectado', 4),
+('Revisar que el led de power esté encendido', 5),
+('Revisar que el led de internet esté encendido', 5),
+('Revisar que el led de ethernet esté encendido', 5),
+('Revisar que el led de wifi esté encendido', 5),
+('Apaga el teléfono', 6),
+('Espera al menos 30 segundos', 6),
+('Enciende el teléfono', 6),
+('Asegúrate de que tienes buena señal', 7),
+('Si la señal es débil, intenta moverte a un lugar con mejor señal', 7),
+('Asegúrate de que todos los cables estén bien conectados', 8),
+('Si hay algún cable suelto, reconéctalo', 8),
+('Asegúrate de que la caja de cable tiene buena señal', 9),
+('Si la señal es débil, intenta mover la caja de cable a un lugar con mejor señal', 9);
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
