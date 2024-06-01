@@ -144,7 +144,8 @@ INSERT INTO Llamada (IdLlamada, FechaHora, Notas, Duracion, Estado, Sentiment, A
 ('call3', '2024-05-24 12:34:43', 'No me sirve el decodificador', '00:04:03', 1, 'positive', 'television', '1', '+525540066976'),
 ('call4', '2024-05-31 20:14:13', 'No tengo señal', '00:01:03', 1, 'neutral', 'television', '1', '+525586117753'),
 ('call5', '2024-05-31 21:44:22', 'No puedo recibir llamadas', '00:00:50', 1, 'positive', 'telefonia', '1', '+525513604788'),
-('call6', '2024-05-31 21:14:13', 'No tengo señal de TV', '00:01:34', 1, 'positive', 'television', '1', '+525586117753');
+('call6', '2024-05-31 21:14:13', 'No tengo señal de TV', '00:01:34', 1, 'positive', 'television', '1', '+525586117753'),
+('call7', '2024-05-27 11:38:45', 'No sirve el internet', '00:01:24', 1, 'negative', 'internet', '1', '+525540066976');
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Encuesta ~~~~~~~~~~~~~~~~~~~~~~~
 
