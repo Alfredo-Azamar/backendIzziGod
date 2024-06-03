@@ -25,7 +25,27 @@ class ClienteController extends AbstractController {
         this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));
         this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this)); //MAX
         this.router.get('/telefonoPorZona/:nombreZona', this.getTelefonoPorZona.bind(this));
+        this.router.get('/paquetesPorCliente/:celular', this.getPaquetesPorCliente.bind(this)); 
     }
+
+
+    private async getPaquetesPorCliente(req: Request, res: Response) {
+        try {
+            const { celular } = req.params;
+            const llamadas = await db.sequelize.query(
+                `SELECT Nombre, Precio, Fecha
+                FROM Contrato AS C
+                JOIN Paquete AS P ON C.IdPaquete = P.IdPaquete
+                WHERE C.Celular = '${celular}'`,
+                { type: db.sequelize.QueryTypes.SELECT });
+
+            res.status(200).json(llamadas);
+        } catch(err) {
+            console.log(err)
+            res.status(500).send('Internal server error '+err)
+        }
+    }
+    
 
     private async getConsultarCliente(req: Request, res: Response) { //MAX
         try {

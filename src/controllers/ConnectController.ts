@@ -20,6 +20,7 @@ class ConnectController extends AbstractController {
     protected initRoutes(): void {
         this.router.post('/sentiment', this.sendSentiment.bind(this));
         this.router.get('/queue', this.getQueue.bind(this));
+        this.router.get('/missed-calls', this.getMissedCalls.bind(this));
     }
 
     private async sendSentiment(req: Request, res: Response) {
@@ -47,7 +48,8 @@ class ConnectController extends AbstractController {
             const segments = response.Segments?.map(segment => ({
                 role: segment.Transcript?.ParticipantRole,
                 content: segment.Transcript?.Content,
-                sentiment: segment.Transcript?.Sentiment
+                sentiment: segment.Transcript?.Sentiment,
+                time : segment.Transcript?.BeginOffsetMillis
             }));
             res.json(segments);
         } catch (error) {
@@ -83,6 +85,37 @@ class ConnectController extends AbstractController {
         } catch (err) {
             console.error(err);
             res.status(500).send('Error getting queue data');
+        }
+    }
+
+    private async getMissedCalls(req: Request, res: Response) {
+        const connect = new AWS.Connect({
+            accessKeyId: AWS_ACCESS_KEY_ID,
+            secretAccessKey: AWS_SECRET_ACCESS_KEY,
+            region: AWS_REGION
+        });
+
+        const params = {
+            InstanceId: 'cbfa02b8-09e5-4774-8576-45965720fb02', // replace with your instance id
+            Filters: {
+                Queues: ['b69796d7-0a6a-4dbe-9337-f04070dc9136'], // replace with your queue id
+                Channels: ['VOICE']
+            },
+            CurrentMetrics: [
+                {
+                    Name: 'AGENTS_ONLINE',
+                    Unit: 'COUNT'
+                }
+            ]
+        };
+
+        try {
+            const data = await connect.getCurrentMetricData(params).promise();
+            const missedCalls = data.MetricResults?.[0]?.Collections?.[0]?.Value;
+            res.json({ missedCalls });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error getting missed calls');
         }
     }
 }

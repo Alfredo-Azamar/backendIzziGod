@@ -9,6 +9,7 @@ import ReporteController from './controllers/ReporteController';
 import AuthenticationController from './controllers/AuthenticationController';
 import SNSController from './controllers/SNSController';
 import ConnectController from './controllers/ConnectController';
+import NotificationController from './controllers/NotificacionesController';
 
 const server = new Server({
     port:PORT,
@@ -25,7 +26,8 @@ const server = new Server({
         ReporteController.instance,
         AuthenticationController.instance,
         SNSController.instance,
-        ConnectController.instance
+        ConnectController.instance,
+        NotificationController.instance
     ]
 });
 

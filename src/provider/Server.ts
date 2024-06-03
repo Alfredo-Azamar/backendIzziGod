@@ -27,14 +27,14 @@ class Server{
         
         this.app.use(cors());
 
-        // this.server = createServer(this.app);
-        // this.io = new SocketIOServer(this.server, {
-        //     cors: {
-        //         origin: "*",
-        //     },
-        // });
-        // this.app.set('socketio', this.io);
-        // this.setupSocketIO();
+        this.server = createServer(this.app);
+        this.io = new SocketIOServer(this.server, {
+            cors: {
+                origin: "*",
+            },
+        });
+        this.app.set('socketio', this.io);
+        this.setupSocketIO();
         
     }
 
@@ -59,7 +59,7 @@ class Server{
     }
 
     public init(){
-        this.app.listen(this.port,()=>{
+        this.server.listen(this.port,()=>{
             console.log(`Server running on port ${this.port}`);
         })       
     }
