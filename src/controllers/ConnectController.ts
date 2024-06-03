@@ -18,7 +18,7 @@ class ConnectController extends AbstractController {
 
     // Inicializar las rutas
     protected initRoutes(): void {
-        this.router.post('/sentiment', this.sendSentiment.bind(this));
+        this.router.get('/sentiment/:coso', this.sendSentiment.bind(this));
         this.router.get('/queue', this.getQueue.bind(this));
         this.router.get('/missed-calls', this.getMissedCalls.bind(this));
     }
@@ -33,7 +33,8 @@ class ConnectController extends AbstractController {
 
         const connect = new AWS.Connect();
 
-        const { coso } = req.body;
+        // const { coso } = req.body;
+        const {coso} = req.params;
         console.log(coso);
 
         const params = {

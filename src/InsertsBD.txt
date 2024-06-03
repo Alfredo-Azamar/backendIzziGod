@@ -104,6 +104,8 @@ INSERT INTO Reporte (FechaHora, Prioridad, Descripcion, IdZona, Celular, IdEmple
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Soluciones ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO SolucionBase (Nombre, Asunto) VALUES 
+('Requiere técnico', 'soporte'),
+('Se presentó incidencia', 'soporte'),
 ('Reiniciar el modém', 'internet'),
 ('Checar las conexiones del módem', 'internet'),
 ('Checar indicaciones led del módem', 'internet'),
@@ -113,33 +115,37 @@ INSERT INTO SolucionBase (Nombre, Asunto) VALUES
 ('Checar señal decodificador', 'television');
 
 INSERT INTO Pasos (Descripcion, IdSolucion) VALUES 
-('Ubicar el módem', 1),
-('Buscar el orificio de reset', 1),
-('Apretarlo durante 5 segundos', 1),
-('Revisar que el cable de corriente esté conectado', 2),
-('Revisar que el cable de internet esté conectado', 2),
-('Revisar que el cable de ethernet esté conectado', 2),
-('Revisar que el led de power esté encendido', 3),
-('Revisar que el led de internet esté encendido', 3),
-('Revisar que el led de ethernet esté encendido', 3),
-('Revisar que el led de wifi esté encendido', 3),
-('Apaga el teléfono', 4),
-('Espera al menos 30 segundos', 4),
-('Enciende el teléfono', 4),
-('Asegúrate de que tienes buena señal', 5),
-('Si la señal es débil, intenta moverte a un lugar con mejor señal', 5),
-('Asegúrate de que todos los cables estén bien conectados', 6),
-('Si hay algún cable suelto, reconéctalo', 6),
-('Asegúrate de que la caja de cable tiene buena señal', 7),
-('Si la señal es débil, intenta mover la caja de cable a un lugar con mejor señal', 7);
+('Ubicar el módem', 3),
+('Buscar el orificio de reset', 3),
+('Apretarlo durante 5 segundos', 3),
+('Revisar que el cable de corriente esté conectado', 4),
+('Revisar que el cable de internet esté conectado', 4),
+('Revisar que el cable de ethernet esté conectado', 4),
+('Revisar que el led de power esté encendido', 5),
+('Revisar que el led de internet esté encendido', 5),
+('Revisar que el led de ethernet esté encendido', 5),
+('Revisar que el led de wifi esté encendido', 5),
+('Apaga el teléfono', 6),
+('Espera al menos 30 segundos', 6),
+('Enciende el teléfono', 6),
+('Asegúrate de que tienes buena señal', 7),
+('Si la señal es débil, intenta moverte a un lugar con mejor señal', 7),
+('Asegúrate de que todos los cables estén bien conectados', 8),
+('Si hay algún cable suelto, reconéctalo', 8),
+('Asegúrate de que la caja de cable tiene buena señal', 9),
+('Si la señal es débil, intenta mover la caja de cable a un lugar con mejor señal', 9);
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Llamada (IdLlamada, FechaHora, Notas, Duracion, Estado, Sentiment, Asunto, IdEmpleado, Celular) VALUES
 ('call1', '2024-05-17 12:24:43', 'No me sirve el servicio', '00:02:10', 1, 'negative', 'internet', 'joahan11', '+525540066976'),
-('call2', '2024-05-23 14:34:23', 'No me sirve el módem', '00:00:00', 0, 'neutral', 'internet', 'joahan11', '+525513604788');
-
+('call2', '2024-05-23 14:34:23', 'No me sirve el módem', '00:00:00', 0, 'neutral', 'internet', 'joahan11', '+525513604788'),
+('call3', '2024-05-24 12:34:43', 'No me sirve el decodificador', '00:04:03', 1, 'positive', 'television', '1', '+525540066976'),
+('call4', '2024-05-31 20:14:13', 'No tengo señal', '00:01:03', 1, 'neutral', 'television', '1', '+525586117753'),
+('call5', '2024-05-31 21:44:22', 'No puedo recibir llamadas', '00:00:50', 1, 'positive', 'telefonia', '1', '+525513604788'),
+('call6', '2024-05-31 21:14:13', 'No tengo señal de TV', '00:01:34', 1, 'positive', 'television', '1', '+525586117753'),
+('call7', '2024-05-27 11:38:45', 'No sirve el internet', '00:01:24', 1, 'negative', 'internet', '1', '+525540066976');
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Encuesta ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -149,3 +155,12 @@ INSERT INTO Encuesta (Pregunta, Calificacion, IdLlamada) VALUES
 (2, 2, "call1"),
 (3, 3, "call1");
 
+
+-- ~~~~~~~~~~~~~~~~~~~~~~~ Notificacion ~~~~~~~~~~~~~~~~~~~~~~~
+
+
+INSERT INTO Notificacion (EsGlobal, FechaHora, Titulo, Descripcion)
+VALUES (1, '2024-05-31 18:39:23', 'Calidad de Llamadas', 'Empleados recuerden cuidar la calidad de todas sus llamadas');
+
+INSERT INTO Notificacion (EsGlobal, FechaHora, Titulo, Descripcion, IdEmpleado)
+VALUES (0, '2024-05-31 20:39:23', 'No alterarse', 'Joahan recuerda no alterarte con las llamadas', 'joahan11');
