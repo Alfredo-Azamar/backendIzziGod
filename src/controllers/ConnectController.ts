@@ -5,6 +5,12 @@ import { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } from '../config'
 import { ConnectContactLensClient, ListRealtimeContactAnalysisSegmentsCommand } from "@aws-sdk/client-connect-contact-lens"
 import { Connect } from 'aws-sdk';
 
+function formatMillisToMinutesAndSeconds(millis: number): string {
+    let minutes = Math.floor(millis / 60000);
+    let seconds = Number(((millis % 60000) / 1000).toFixed(0));
+    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+}
+
 class ConnectController extends AbstractController {
     // Singleton
     private static _instance: ConnectController;
@@ -18,7 +24,7 @@ class ConnectController extends AbstractController {
 
     // Inicializar las rutas
     protected initRoutes(): void {
-        this.router.post('/sentiment', this.sendSentiment.bind(this));
+        this.router.get('/sentiment/:coso', this.sendSentiment.bind(this));
         this.router.get('/queue', this.getQueue.bind(this));
     }
 
@@ -32,7 +38,8 @@ class ConnectController extends AbstractController {
 
         const connect = new AWS.Connect();
 
-        const { coso } = req.body;
+        // const { coso } = req.body;
+        const {coso} = req.params;
         console.log(coso);
 
         const params = {
@@ -47,7 +54,8 @@ class ConnectController extends AbstractController {
             const segments = response.Segments?.map(segment => ({
                 role: segment.Transcript?.ParticipantRole,
                 content: segment.Transcript?.Content,
-                sentiment: segment.Transcript?.Sentiment
+                sentiment: segment.Transcript?.Sentiment,
+                startTime: formatMillisToMinutesAndSeconds(segment.Transcript?.BeginOffsetMillis || 0)
             }));
             res.json(segments);
         } catch (error) {

@@ -59,7 +59,7 @@ class Server{
     }
 
     public init(){
-        this.app.listen(this.port,()=>{
+        this.server.listen(this.port,()=>{
             console.log(`Server running on port ${this.port}`);
         })       
     }

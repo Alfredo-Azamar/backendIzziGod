@@ -1,6 +1,6 @@
 import { Model, Sequelize } from "sequelize";
 
-export enum RolEnum {
+enum RolEnum {
   Supervisor = "supervisor",
   Agente = "agente"
 }

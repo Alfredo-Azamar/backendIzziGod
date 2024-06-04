@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
 import { Op } from "sequelize";
+import { any } from "joi";
 
 class LlamadaController extends AbstractController {
   //Singleton
@@ -25,42 +26,153 @@ class LlamadaController extends AbstractController {
     this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
-    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this));
+    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this)); //Socket
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
     this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
     this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));
     this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
     this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones
     this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones
-    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this));
+    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this)); //Socket
+    this.router.get("/llamadasArribaDelTiempo/:duracion", this.llamadasArribaDelTiempo.bind(this));
+    this.router.get("/numPorAsunto", this.numPorAsunto.bind(this));
+    this.router.get("/llamadasPorDia", this.getLlamadasPorDiaHistorico.bind(this));
+    this.router.get("/llamadasPorHoras", this.porHoras.bind(this));
+    this.router.get("/top4Agentes", this.top4Agentes.bind(this));
   }
 
-  private async putActualizarLlamadaFinalizada(req: Request, res: Response) { 
+  private async top4Agentes(req: Request, res: Response) {
+    try {
+      const agentes = await db.sequelize.query(
+        `SELECT Nombre, ApellidoP, AVG(Calificacion) AS cali
+        FROM Llamada
+        JOIN Encuesta ON Llamada.IdLlamada = Encuesta.IdLlamada
+        JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
+        GROUP BY Llamada.IdEmpleado
+        ORDER BY Llamada.IdEmpleado DESC
+        LIMIT 4;`,
+        { type: db.sequelize.QueryTypes.SELECT });
+      res.status(200).json(agentes);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async porHoras(req: Request, res: Response) {
+    try {
+      const llamadas = await db.sequelize.query(
+        `SELECT 
+          HOUR(FechaHora) AS Hora,
+          COUNT(*) AS NumeroDeLlamadas
+        FROM Llamada AS L
+        GROUP BY HOUR(FechaHora)
+        ORDER BY Hora ASC;`,
+        { type: db.sequelize.QueryTypes.SELECT });
+      const llamadasPorHora = [0, 0, 0, 0, 0, 0, 0, 0,
+                               0, 0, 0, 0, 0, 0, 0, 0,
+                               0, 0, 0, 0, 0, 0, 0, 0]; // Para cada día de la semana
+
+      llamadas.forEach((llamada: any) => {
+        llamadasPorHora[parseInt(llamada.Hora) - 1] = llamada.NumeroDeLlamadas;
+      });
+
+      res.status(200).json(llamadasPorHora);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  public async getLlamadasPorDiaHistorico(req: Request, res: Response) {
+    try {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const endOfMonth = new Date();
+
+      const llamadas = await db.Llamada.findAll({
+        where: {
+          FechaHora: {
+            [Op.between]: [startOfMonth, endOfMonth]
+          }
+        }
+      });
+      const llamadasPorDia = [0, 0, 0, 0, 0, 0, 0]; // Para cada día de la semana
+
+      llamadas.forEach((llamada: any) => {
+        const dia = new Date(llamada.FechaHora).getDay(); // Asume que 'fecha' es cuando se realizó la llamada
+        llamadasPorDia[dia]++;
+      });
+
+      console.log(llamadasPorDia);
+
+      res.json(llamadasPorDia);
+
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
+  }
+
+  private async numPorAsunto(req: Request, res: Response) {
+    try {
+      const llamadas = await db.sequelize.query(
+        `SELECT Asunto, COUNT(*) as veces FROM Llamada GROUP BY Asunto ORDER BY Asunto ASC;`,
+        { type: db.sequelize.QueryTypes.SELECT });
+      res.status(200).json(llamadas);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async llamadasArribaDelTiempo(req: Request, res: Response) {
+    try {
+      const { duracion } = req.params;
+      console.log(duracion);
+      const llamadas = await db.sequelize.query(
+        `SELECT 
+          SUM(CASE WHEN TIME_TO_SEC(Duracion) > ${duracion} THEN 1 ELSE 0 END) AS ArribaDelTiempo,
+          SUM(CASE WHEN TIME_TO_SEC(Duracion) <= ${duracion} THEN 1 ELSE 0 END) AS AbajoDelTiempo
+        FROM Llamada AS L`,
+        { type: db.sequelize.QueryTypes.SELECT });
+      res.status(200).json(llamadas);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async putActualizarLlamadaFinalizada(req: Request, res: Response) {
     // Cambiar la duracion y estado de la llamada
     try {
-      const {id} = req.body;
-      const {duracion} = req.body;
-      const {estado} = req.body;
+      const { id } = req.body;
+      const { duracion } = req.body;
+      const { estado } = req.body;
       const actLlamada = await db.Llamada.update(
         { Duracion: duracion, Estado: estado },
         { where: { IdLlamada: id } }
       );
 
-      // // Emitir evento de socket
-      // const io = req.app.get("socketio");
-      // if (io) {
-      //   io.emit("newCall", actLlamada);
-      // } else {
-      //   console.log("Socket.IO no está disponible");
-      // }
-      
+      const io = req.app.get("socketio");
+      if (io) {
+        const llamadas = await this.getInfoTarjetasV3();
+        io.emit("newPage", llamadas);
+        console.log("Evento emitido");
+      } else {
+        console.log("Socket.IO no está disponible");
+      }
+
+
 
       res.status(200).send(actLlamada);
       console.log("Llamada actualizada");
 
-    }catch (err: any) {
+    } catch (err: any) {
       console.log(err);
-      res.status(500).send('Internal server error'+err);
+      res.status(500).send('Internal server error' + err);
     }
   }
 
@@ -133,7 +245,7 @@ class LlamadaController extends AbstractController {
   private async getInfoIncidencias(req: Request, res: Response) {
     try {
       const incidencia = await db.sequelize.query(`
-        SELECT *, Incidencia.Nombre as NombreIncidencia, Zona.Nombre as NombreZona
+        SELECT *, Incidencia.Nombre as NombreIncidencia, Zona.Nombre as NombreZona, Reporte.Prioridad
         FROM Reporte
         JOIN Incidencia ON Reporte.IdIncidencia = Incidencia.IdIncidencia
         JOIN Zona ON Reporte.IdZona = Zona.IdZona
@@ -168,7 +280,7 @@ class LlamadaController extends AbstractController {
           L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
-          Empleado.Nombre, Empleado.ApellidoP, 
+          Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
           Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
           (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
       FROM Empleado
@@ -251,7 +363,9 @@ class LlamadaController extends AbstractController {
       // Emitir evento de socket
       const io = req.app.get("socketio");
       if (io) {
-        io.emit("newCall", actLlamada);
+        const llamadas = await this.getInfoTarjetasV3();
+        io.emit("newPage", llamadas);
+        console.log("Evento emitido");
       } else {
         console.log("Socket.IO no está disponible");
       }
@@ -285,22 +399,58 @@ class LlamadaController extends AbstractController {
 
   private async getAverageCallDuration(req: Request, res: Response) {
     try {
-      let averageDuration = await db["Llamada"].findAll({
-        attributes: [[db.Sequelize.fn('AVG', db.Sequelize.col('Duracion')), 'averageDuration']]
-      });
-      res.status(200).json(averageDuration);
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        let averageDuration = await db["Llamada"].findAll({
+            attributes: [[db.Sequelize.fn('AVG', db.Sequelize.literal(`TIME_TO_SEC(Duracion)`)), 'averageDuration']],
+            where: {
+                FechaHora: {
+                    [db.Sequelize.Op.between]: [startOfDay, endOfDay]
+                }
+            }
+        });
+        res.status(200).json(averageDuration);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Internal server error" + err);
+    }
+}
+
+
+  private async getNegativeCallsCount(req: Request, res: Response) {
+    try {
+      const llamadas = await db.sequelize.query(`
+      SELECT COUNT(*) AS count
+      FROM (
+        SELECT 
+            L.Sentiment
+        FROM Empleado
+        LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
+                SELECT MAX(L2.FechaHora) 
+                FROM Llamada AS L2 
+                WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+        LEFT JOIN Cliente ON L.Celular = Cliente.Celular
+        LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
+        LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
+        LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete 
+        WHERE L.Sentiment = "NEGATIVE") AS subquery;
+      `, { type: db.sequelize.QueryTypes.SELECT });
+      
+      res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
     }
   }
 
-
-
-  private async getNegativeCallsCount(req: Request, res: Response) {
+  private async getNegativeCallsCount2(req: Request, res: Response) {
     try {
       let count = await db["Llamada"].count({
-        where: { Estado: false, Sentiment: "NEGATIVE" }
+        where: { Estado: true, Sentiment: "NEGATIVE" }
       });
       res.status(200).json({ count });
     } catch (err) {
@@ -340,7 +490,7 @@ class LlamadaController extends AbstractController {
           L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
-          Empleado.Nombre, Empleado.ApellidoP, 
+          Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
           Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
           (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
       FROM Empleado
