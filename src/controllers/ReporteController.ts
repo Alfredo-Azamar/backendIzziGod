@@ -29,9 +29,9 @@ class ReporteController extends AbstractController{
             const reportes = await db.Reporte.findAll({
                 where: {Celular:id}
             })
+            
             // Si el cliente no tiene reportes
-           
-            if (!reportes) {
+            if (reportes.length == 0) {
                 return res.status(404).send("No tiene reportes");
               }
 

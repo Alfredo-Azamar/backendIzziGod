@@ -24,8 +24,8 @@ class ClienteController extends AbstractController {
         this.router.put('/actualizarContrato/:id', this.putActualizarContrato.bind(this));//* NO IMPLEMENTADO EN APPS
         this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));
         this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this)); //MAX
+        this.router.get('/telefonoPorZona/:nombreZona', this.getTelefonoPorZona.bind(this));
     }
-
 
     private async getConsultarCliente(req: Request, res: Response) { //MAX
         try {
@@ -70,6 +70,32 @@ class ClienteController extends AbstractController {
             res.status(500).send('Internal server error '+err)
         }
     }
+
+    private async getTelefonoPorZona(req: Request, res: Response) {
+        try{
+            let { nombreZona } = req.params;
+
+            let zona = await db.Zona.findOne({
+                where: { nombre: nombreZona }
+            });
+
+            if (!zona) {
+                res.status(404).send('Zona not found');
+                return;
+            }
+
+            let telefonos = await db.Cliente.findAll({
+                where: { IdZona: zona.IdZona },
+                attributes: ['Celular']
+            });
+            res.status(200).json(telefonos);
+        } catch(err) {
+            console.log(err)
+            res.status(500).send('Internal server error '+err)
+        }
+    }
+
+    
 
     private async postCrearCliente(req: Request,res: Response){
         try{

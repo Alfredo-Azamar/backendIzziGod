@@ -10,10 +10,8 @@ enum AsuntoEnum{
 
 interface SolucionBaseAttributes {
     IdSolucion: number;
+    Nombre: string;
     Asunto: AsuntoEnum;
-    Prioridad: number;
-    Paso: number;
-    Solucion: string;
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -22,10 +20,15 @@ module.exports = (sequelize: any, DataTypes: any) => {
         implements SolucionBaseAttributes
     {
         public IdSolucion!: number;
+        public Nombre!: string;
         public Asunto!: AsuntoEnum;
-        public Prioridad!: number;
-        public Paso!: number;
-        public Solucion!: string;
+
+        static associate(models: any) {
+            SolucionBase.hasMany(models.Pasos, {
+                foreignKey: "IdSolucion",
+                as: "Pasos",
+            });
+        }
     }
     SolucionBase.init(
         {
@@ -35,21 +38,13 @@ module.exports = (sequelize: any, DataTypes: any) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
+            Nombre: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
             Asunto: {
                 type: DataTypes.ENUM,
                 values: Object.values(AsuntoEnum),
-                allowNull: false,
-              },
-            Prioridad: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-            },
-            Paso: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-            },
-            Solucion: {
-                type: DataTypes.STRING,
                 allowNull: false,
             },
         },
