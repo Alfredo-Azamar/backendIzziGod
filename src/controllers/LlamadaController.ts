@@ -399,30 +399,55 @@ class LlamadaController extends AbstractController {
 
   private async getAverageCallDuration(req: Request, res: Response) {
     try {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
 
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
 
-      let averageDuration = await db["Llamada"].findAll({
-        attributes: [[db.Sequelize.fn('AVG', db.Sequelize.col('Duracion')), 'averageDuration']],
-        where: {
-          FechaHora: {
-            [db.Sequelize.Op.between]: [startOfDay, endOfDay]
-          }
-        }
-      });
-      res.status(200).json(averageDuration);
+        let averageDuration = await db["Llamada"].findAll({
+            attributes: [[db.Sequelize.fn('AVG', db.Sequelize.literal(`TIME_TO_SEC(Duracion)`)), 'averageDuration']],
+            where: {
+                FechaHora: {
+                    [db.Sequelize.Op.between]: [startOfDay, endOfDay]
+                }
+            }
+        });
+        res.status(200).json(averageDuration);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Internal server error" + err);
+    }
+}
+
+
+  private async getNegativeCallsCount(req: Request, res: Response) {
+    try {
+      const llamadas = await db.sequelize.query(`
+      SELECT COUNT(*) AS count
+      FROM (
+        SELECT 
+            L.Sentiment
+        FROM Empleado
+        LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
+                SELECT MAX(L2.FechaHora) 
+                FROM Llamada AS L2 
+                WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+        LEFT JOIN Cliente ON L.Celular = Cliente.Celular
+        LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
+        LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
+        LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete 
+        WHERE L.Sentiment = "NEGATIVE") AS subquery;
+      `, { type: db.sequelize.QueryTypes.SELECT });
+      
+      res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
     }
   }
 
-
-
-  private async getNegativeCallsCount(req: Request, res: Response) {
+  private async getNegativeCallsCount2(req: Request, res: Response) {
     try {
       let count = await db["Llamada"].count({
         where: { Estado: true, Sentiment: "NEGATIVE" }
