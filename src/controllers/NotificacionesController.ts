@@ -19,6 +19,7 @@ class ReporteController extends AbstractController {
         this.router.get('/test', this.getTest.bind(this));
         this.router.post('/crearNotificacion', this.postCrearNotificacion.bind(this));
         this.router.get('/consultarNotificaciones', this.getConsultarNotificaciones.bind(this));
+        this.router.post('/crearNotificacionEsGlobal', this.postCrearNotificacionEsGlobal.bind(this));
     }
 
     private async getConsultarNotificaciones(req: Request, res: Response) {
@@ -33,6 +34,23 @@ class ReporteController extends AbstractController {
                 ],
             });
             res.status(200).json(notificaciones);
+        } catch (error: any) {
+            console.log(error);
+            res.status(500).send('Internal server error' + error);
+        }
+    }
+
+    private async postCrearNotificacionEsGlobal(req: Request, res: Response) {
+        try {
+            const { FechaHora, Titulo, Descripcion } = req.body;
+            const notificacion = await db.Notificacion.create({
+                EsGlobal: true,
+                FechaHora,
+                Titulo,
+                Descripcion,
+                IdEmpleado: null
+            });
+            res.status(201).json("<h1>Notificación creada con éxito</h1>");
         } catch (error: any) {
             console.log(error);
             res.status(500).send('Internal server error' + error);
