@@ -39,6 +39,25 @@ class LlamadaController extends AbstractController {
     this.router.get("/llamadasPorDia", this.getLlamadasPorDiaHistorico.bind(this));
     this.router.get("/llamadasPorHoras", this.porHoras.bind(this));
     this.router.get("/top4Agentes", this.top4Agentes.bind(this));
+    this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
+  }
+
+  private async emocionesPorDia(req: Request, res: Response) {
+    try{
+      const emociones = await db.sequelize.query(`
+      SELECT 
+        SUM(CASE WHEN Sentiment = 'positive' THEN 1 ELSE 0 END) as Positive,
+        SUM(CASE WHEN Sentiment = 'neutral' THEN 1 ELSE 0 END) as Neutral,
+        SUM(CASE WHEN Sentiment = 'negative' THEN 1 ELSE 0 END) as Negative
+      FROM Llamada
+      WHERE DATE(FechaHora) = CURDATE();
+      `, 
+      { type: db.sequelize.QueryTypes.SELECT });
+      res.status(200).json(emociones);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
   }
 
   private async top4Agentes(req: Request, res: Response) {
@@ -459,29 +478,6 @@ class LlamadaController extends AbstractController {
     }
   }
 
-
-
-  // private async postCrearLlamada(req: Request, res: Response) {
-  //   try {
-  //     console.log(req.body);
-  //     const nuevaLlamada = await db.Llamada.create(req.body); // Insert
-  //     console.log("Llamada creada");
-
-  //     // Emitir evento de socket
-  //     const io = req.app.get("socketio");
-  //     if (io) {
-  //       io.emit("reloadPage");
-  //       console.log("Evento emitido");
-  //     } else {
-  //       console.log("Socket.IO no está disponible");
-  //     }
-
-  //     res.status(200).send("<h1>Llamada creada</h1>");
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.status(500).send("Internal server error" + err);
-  //   }
-  // }
 
   private async getInfoTarjetasV3() {
     try {
