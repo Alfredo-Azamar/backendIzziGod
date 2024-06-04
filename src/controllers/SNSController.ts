@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import AWS from 'aws-sdk';
-import {AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY} from '../config';
+import {AWS_REGION, AWS_ACCESS_KEY_ID_C, AWS_SECRET_ACCESS_KEY_C} from '../config';
 
 
 class SNSController extends AbstractController {
@@ -27,8 +27,8 @@ class SNSController extends AbstractController {
 
             // Configurar AWS con tus credenciales
             AWS.config.update({
-                accessKeyId: AWS_ACCESS_KEY_ID,
-                secretAccessKey: AWS_SECRET_ACCESS_KEY,
+                accessKeyId: AWS_ACCESS_KEY_ID_C,
+                secretAccessKey: AWS_SECRET_ACCESS_KEY_C,
                 region: AWS_REGION // Por ejemplo, 'us-east-1'
             });
 
@@ -57,14 +57,13 @@ class SNSController extends AbstractController {
 
             // Configurar AWS con tus credenciales
             AWS.config.update({
-                accessKeyId: AWS_ACCESS_KEY_ID,
-                secretAccessKey: AWS_SECRET_ACCESS_KEY,
+                accessKeyId: AWS_ACCESS_KEY_ID_C,
+                secretAccessKey: AWS_SECRET_ACCESS_KEY_C,
                 region: AWS_REGION // Por ejemplo, 'us-east-1'
             });
 
             // Crear un nuevo objeto SNS
             const sns = new AWS.SNS();
-
 
             console.log("phoneNumber", phoneNumber);
             console.log("message", message);
