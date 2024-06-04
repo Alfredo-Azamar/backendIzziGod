@@ -39,6 +39,26 @@ class LlamadaController extends AbstractController {
     this.router.get("/llamadasPorDia", this.getLlamadasPorDiaHistorico.bind(this));
     this.router.get("/llamadasPorHoras", this.porHoras.bind(this));
     this.router.get("/top4Agentes", this.top4Agentes.bind(this));
+    this.router.get("/obtenerSentimiento/:IdLlamada", this.obtenerSentimiento.bind(this));
+  }
+
+  private async obtenerSentimiento(req: Request, res: Response) {
+    try {
+      const { IdLlamada } = req.params;
+      const sentimiento = await db.Llamada.findOne({
+        where: { IdLlamada },
+        attributes: ["Sentiment"]
+      });
+
+      if (!sentimiento) {
+        return res.status(404).send("No se encontró el sentimiento");
+      }
+
+      res.status(200).json(sentimiento);
+    } catch (err: any) {
+      console.log(err);
+      res.status(500).send('Internal server error' + err);
+    }
   }
 
   private async top4Agentes(req: Request, res: Response) {
