@@ -33,6 +33,17 @@ class EmpleadoController extends AbstractController {
       "/consultarLlamadasEmpleado/:id",
       this.getSumLlamadasEmpleado.bind(this)
     );
+<<<<<<<<< Temporary merge branch 1
+    this.router.get(
+      "/consutarEmpleado/:id",
+      this.getConsultarEmpleado.bind(this)
+    );
+    // Api para mostrar el promedio de llamadas por agente
+    this.router.get(
+      "/consultarPromLlamadasEmpleado/:id",
+      this.getPromLlamadasEmpleado.bind(this)
+    );
+=========
     this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
     this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
   }
