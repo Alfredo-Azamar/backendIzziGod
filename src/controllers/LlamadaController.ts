@@ -51,7 +51,15 @@ class LlamadaController extends AbstractController {
         {Sentiment: sentiment},
         {where: {IdLlamada: id}}
       );
-      // Coso IO
+      
+      const io = req.app.get("socketio");
+      if (io) {
+        io.emit("sentiment");
+        console.log("Evento emitido");
+      } else {
+        console.log("Socket.IO no está disponible");
+      }
+
       res.status(200).send(actLlamada);
       console.log("Sentiment actualizado");
     } catch (err) {
