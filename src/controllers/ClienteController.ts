@@ -53,7 +53,7 @@ class ClienteController extends AbstractController {
 
             const cliente = await db.Cliente.findOne({
                 where: { Celular: celular },
-                attributes: ['Celular', 'Nombre', 'ApellidoP', 'ApellidoM', 'IdZona']
+                attributes: ['Celular', 'Nombre', 'ApellidoP', 'ApellidoM','Sexo','Correo', 'FechaNac', 'IdZona']
             });
 
             if (!cliente) {
