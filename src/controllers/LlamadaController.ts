@@ -74,7 +74,7 @@ class LlamadaController extends AbstractController {
       
       const io = req.app.get("socketio");
       if (io) {
-        io.emit("sentiment");
+        io.emit("sentiment", sentiment);
         console.log("Evento emitido");
       } else {
         console.log("Socket.IO no está disponible");
@@ -341,7 +341,7 @@ class LlamadaController extends AbstractController {
   private async getInfoTarjetasV2(req: Request, res: Response) {
     try {
       const llamadas = await db.sequelize.query(`
-      SELECT 
+      SELECT DISTINCT
           L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
@@ -357,6 +357,7 @@ class LlamadaController extends AbstractController {
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
       LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
       LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
+      WHERE Empleado.Rol = 'agente'
       ORDER BY Empleado.IdEmpleado;
       `, { type: db.sequelize.QueryTypes.SELECT });
 
@@ -528,7 +529,7 @@ class LlamadaController extends AbstractController {
   private async getInfoTarjetasV3() {
     try {
       const llamadas = await db.sequelize.query(`
-      SELECT 
+      SELECT DISTINCT
           L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
@@ -544,6 +545,7 @@ class LlamadaController extends AbstractController {
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
       LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
       LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
+      WHERE Empleado.Rol = 'agente'
       ORDER BY Empleado.IdEmpleado;
     `, { type: db.sequelize.QueryTypes.SELECT });
 
