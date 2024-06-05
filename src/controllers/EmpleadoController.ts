@@ -50,6 +50,26 @@ class EmpleadoController extends AbstractController {
       this.getPromLlamadasEmpleado.bind(this)
     );
       this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
+      this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this)); 
+  }
+
+  private async EMERGENCIA(req: Request, res: Response) {
+    try {
+      const { id, nombre, apellido } = req.body;
+      
+      const io = req.app.get("socketio");
+
+      if (!io) {
+        return res.status(500).send("Socket.io is not initialized");
+      } else {
+        io.emit("EMERGENCIA", { id, nombre, apellido });
+        console.log("EMERGENCIA", { id, nombre, apellido });
+      }
+      res.status(200).send("EMERGENCIA enviada");
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
   }
 
   private async agentesActivos(req: Request, res: Response) {

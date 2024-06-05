@@ -1,7 +1,7 @@
 def valorar():
-    negativo =  5
-    positivo =  10
-    neutral = 5
+    negativo =  18
+    positivo =  0
+    neutral = 1
     suma = negativo * -1 + positivo * 1 + neutral * 0
     cant = negativo + positivo + neutral
     resultado = (suma / cant) + 1

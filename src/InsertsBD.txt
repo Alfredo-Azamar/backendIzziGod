@@ -173,3 +173,11 @@ VALUES (1, '2024-05-31 18:39:23', 'Calidad de Llamadas', 'Empleados recuerden cu
 
 INSERT INTO Notificacion (EsGlobal, FechaHora, Titulo, Descripcion, IdEmpleado)
 VALUES (0, '2024-05-31 20:39:23', 'No alterarse', 'Joahan recuerda no alterarte con las llamadas', 'joahan11');
+
+
+SELECT 
+    SUM(CASE WHEN Sentiment = 'positive' THEN 1 ELSE 0 END) as Positive,
+    SUM(CASE WHEN Sentiment = 'neutral' THEN 1 ELSE 0 END) as Neutral,
+    SUM(CASE WHEN Sentiment = 'negative' THEN 1 ELSE 0 END) as Negative
+FROM Llamada
+WHERE DATE(FechaHora) = CURDATE();

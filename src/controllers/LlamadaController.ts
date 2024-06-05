@@ -40,6 +40,7 @@ class LlamadaController extends AbstractController {
     this.router.get("/llamadasPorHoras", this.porHoras.bind(this));
     this.router.get("/top4Agentes", this.top4Agentes.bind(this));
     this.router.get("/obtenerSentimiento/:IdLlamada", this.obtenerSentimiento.bind(this));
+    this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
   }
 
   private async obtenerSentimiento(req: Request, res: Response) {
@@ -58,6 +59,24 @@ class LlamadaController extends AbstractController {
     } catch (err: any) {
       console.log(err);
       res.status(500).send('Internal server error' + err);
+    }
+  }
+
+  private async emocionesPorDia(req: Request, res: Response) {
+    try {
+      const emociones = await db.sequelize.query(`
+      SELECT 
+        SUM(CASE WHEN Sentiment = 'positive' THEN 1 ELSE 0 END) as Positive,
+        SUM(CASE WHEN Sentiment = 'neutral' THEN 1 ELSE 0 END) as Neutral,
+        SUM(CASE WHEN Sentiment = 'negative' THEN 1 ELSE 0 END) as Negative
+      FROM Llamada
+      WHERE DATE(FechaHora) = CURDATE();
+      `,
+        { type: db.sequelize.QueryTypes.SELECT });
+      res.status(200).json(emociones);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
     }
   }
 
@@ -90,8 +109,8 @@ class LlamadaController extends AbstractController {
         ORDER BY Hora ASC;`,
         { type: db.sequelize.QueryTypes.SELECT });
       const llamadasPorHora = [0, 0, 0, 0, 0, 0, 0, 0,
-                               0, 0, 0, 0, 0, 0, 0, 0,
-                               0, 0, 0, 0, 0, 0, 0, 0]; // Para cada día de la semana
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0]; // Para cada día de la semana
 
       llamadas.forEach((llamada: any) => {
         llamadasPorHora[parseInt(llamada.Hora) - 1] = llamada.NumeroDeLlamadas;
@@ -419,26 +438,26 @@ class LlamadaController extends AbstractController {
 
   private async getAverageCallDuration(req: Request, res: Response) {
     try {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
 
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
 
-        let averageDuration = await db["Llamada"].findAll({
-            attributes: [[db.Sequelize.fn('AVG', db.Sequelize.literal(`TIME_TO_SEC(Duracion)`)), 'averageDuration']],
-            where: {
-                FechaHora: {
-                    [db.Sequelize.Op.between]: [startOfDay, endOfDay]
-                }
-            }
-        });
-        res.status(200).json(averageDuration);
+      let averageDuration = await db["Llamada"].findAll({
+        attributes: [[db.Sequelize.fn('AVG', db.Sequelize.literal(`TIME_TO_SEC(Duracion)`)), 'averageDuration']],
+        where: {
+          FechaHora: {
+            [db.Sequelize.Op.between]: [startOfDay, endOfDay]
+          }
+        }
+      });
+      res.status(200).json(averageDuration);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Internal server error" + err);
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
     }
-}
+  }
 
 
   private async getNegativeCallsCount(req: Request, res: Response) {
@@ -459,7 +478,7 @@ class LlamadaController extends AbstractController {
         LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete 
         WHERE L.Sentiment = "NEGATIVE") AS subquery;
       `, { type: db.sequelize.QueryTypes.SELECT });
-      
+
       res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
@@ -479,29 +498,6 @@ class LlamadaController extends AbstractController {
     }
   }
 
-
-
-  // private async postCrearLlamada(req: Request, res: Response) {
-  //   try {
-  //     console.log(req.body);
-  //     const nuevaLlamada = await db.Llamada.create(req.body); // Insert
-  //     console.log("Llamada creada");
-
-  //     // Emitir evento de socket
-  //     const io = req.app.get("socketio");
-  //     if (io) {
-  //       io.emit("reloadPage");
-  //       console.log("Evento emitido");
-  //     } else {
-  //       console.log("Socket.IO no está disponible");
-  //     }
-
-  //     res.status(200).send("<h1>Llamada creada</h1>");
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.status(500).send("Internal server error" + err);
-  //   }
-  // }
 
   private async getInfoTarjetasV3() {
     try {
