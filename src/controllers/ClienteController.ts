@@ -49,22 +49,44 @@ class ClienteController extends AbstractController {
 
     private async getConsultarCliente(req: Request, res: Response) { //MAX
         try {
-            const { celular } = req.params;
-            await db.Cliente.findOne({
+            const { celular } = req.params; 
+
+            const cliente = await db.Cliente.findOne({
                 where: { Celular: celular },
                 attributes: ['Celular', 'Nombre', 'ApellidoP', 'ApellidoM', 'IdZona']
-            })
-                .then((cliente: any) => {
-                    if (cliente) {
-                        res.status(200).json(cliente);
-                    } else {
-                        res.status(404).send("Cliente no encontrado");
-                    }
-                })
-                .catch((err: any) => {
-                    console.log(err);
-                    res.status(500).send('Internal server error' + err);
-                });
+            });
+
+            if (!cliente) {
+                res.status(404).send('Cliente not found');
+                return;
+            }
+
+            const zona = await db.Zona.findOne({
+                where: { IdZona: cliente.IdZona },
+                attributes: ['Nombre']
+            });
+
+            const contratos = await db.Contrato.findAll({
+                where: { Celular: celular } ,
+                attributes: ['IdPaquete']
+            });
+
+            const paquetes = await db.Paquete.findAll({
+                where: { IdPaquete: contratos.map((c:any) => c.IdPaquete) },
+                attributes: ['Nombre']
+            });
+
+            const paquetesInfo = paquetes.map((paquete: any) => ({
+                Nombre: paquete.Nombre,
+            }));
+
+            res.status(200).json({ 
+                ...cliente.toJSON(), 
+                Zona: zona.Nombre, 
+                Paquetes: paquetesInfo 
+            });
+
+
         } catch(error:any) {
             console.log(error);
             res.status(500).send('Internal server error'+error);

@@ -51,56 +51,7 @@ class EmpleadoController extends AbstractController {
       this.getPromLlamadasEmpleado.bind(this)
     );
       this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
-      this.router.get("/notificacionesDia/:id/:fecha", this.notificacionesDia.bind(this)); //Notificaciones
-      this.router.get("/notificaciones", this.notificaciones.bind(this)); //Notificaciones
-  }
-
-  private async notificaciones(req: Request, res: Response) {
-    try {
-
-      const notificaciones = await db["Notificacion"].findAll();
-      res.status(200).json(notificaciones);
-
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error" + err);
-    }
-  }
-
-  private async notificacionesDia(req: Request, res: Response) {
-    try {
-      const { id, fecha } = req.params;
-  
-      // Convertir la fecha de la URL al formato de la base de datos (ISO 8601)
-      const fechaISO = `${fecha}T00:00:00.000Z`;
-  
-      const empleado = await db.Empleado.findOne({
-        where: { IdEmpleado: id },
-      });
-  
-      if (!empleado) {
-        return res.status(404).send("El empleado no existe");
-      }
-  
-      const notificaciones = await db.Notificacion.findAll({
-        where: {
-          IdEmpleado: id,
-          FechaHora: {
-            [Op.between]: [fechaISO, new Date(new Date(fechaISO).getTime() + 86400000)] // Agregar 24 horas al final del día
-          }
-        }
-      });
-  
-      if (notificaciones.length === 0) {
-        return res.status(404).send("No se encontraron notificaciones para este empleado en la fecha especificada");
-      }
-  
-      return res.status(200).json(notificaciones);
-  
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send("Error interno del servidor: " + error);
-    }
+      
   }
 
   private async agentesActivos(req: Request, res: Response) {
