@@ -74,7 +74,7 @@ class LlamadaController extends AbstractController {
       
       const io = req.app.get("socketio");
       if (io) {
-        io.emit("sentiment");
+        io.emit("sentiment", sentiment);
         console.log("Evento emitido");
       } else {
         console.log("Socket.IO no está disponible");
