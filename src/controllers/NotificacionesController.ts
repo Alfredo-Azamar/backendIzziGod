@@ -29,48 +29,64 @@ class ReporteController extends AbstractController {
       "/crearNotificacionEsGlobal",
       this.postCrearNotificacionEsGlobal.bind(this)
     );
-    
+
     this.router.get(
       "/notificacionesAgente/:id/:fecha",
       this.notificacionAgente.bind(this)
     );
-    this.router.get("/notificacionesDiaGlobal/:fecha", this.notificacionesDiaGlobal.bind(this));
+    this.router.get(
+      "/notificacionesDiaGlobal/:fecha",
+      this.notificacionesDiaGlobal.bind(this)
+    );
+    this.router.delete(
+      "/eliminarNotificacion/:id",
+      this.deleteNotificacion.bind(this)
+    );
+  }
+
+  private async deleteNotificacion(req: Request, res: Response) {
+    try {
+
+      const {id} = req.params;
+      await db.Notificacion.destroy({where:{IdNotificacion:id}});
+      res.status(200).send("Notificación eliminada correctamente");
+
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
   }
 
   private async notificacionesDiaGlobal(req: Request, res: Response) {
     try {
-        try {
-            const { fecha } = req.params;
+      const { fecha } = req.params;
 
-            const fechaISO = `${fecha}T00:00:00.000Z`;
-      
-            const notificaciones = await db.Notificacion.findAll({
-              where: {
-                EsGlobal: true,
-                FechaHora: {
-                    [Op.between]: [fechaISO, new Date(new Date(fechaISO).getTime() + 86400000)] // Agregar 24 horas al final del día
-                  }
-              }
-            });
+      const fechaISO = `${fecha}T00:00:00.000Z`;
 
-            if (notificaciones.length === 0) {
-                return res
-                  .status(404)
-                  .send(
-                    "No se encontraron notificaciones globales en la fecha especificada"
-                  );
-              }
-        
-            res.status(200).json(notificaciones);
-      
-          } catch (error: any) {
-            console.log(error);
-            res.status(500).send("Internal server error" + error);
-          }
+      const notificaciones = await db.Notificacion.findAll({
+        where: {
+          EsGlobal: true,
+          FechaHora: {
+            [Op.between]: [
+              fechaISO,
+              new Date(new Date(fechaISO).getTime() + 86400000),
+            ], // Agregar 24 horas al final del día
+          },
+        },
+      });
 
+      if (notificaciones.length === 0) {
+        return res
+          .status(404)
+          .send(
+            "No se encontraron notificaciones globales en la fecha especificada"
+          );
+      }
+
+      res.status(200).json(notificaciones);
     } catch (error: any) {
-        console.log(error);
-        res.status(500).send("Internal server error" + error);
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
     }
   }
 
@@ -96,9 +112,8 @@ class ReporteController extends AbstractController {
         },
       });
 
-      console.log(notificaciones)
+      console.log(notificaciones);
       return notificaciones;
-
     } catch (err) {
       console.log(err);
       throw new Error("Internal server error" + err);
@@ -142,14 +157,12 @@ class ReporteController extends AbstractController {
         },
       });
 
-      console.log(notificaciones)
+      console.log(notificaciones);
       return notificaciones;
-
     } catch (err) {
       console.log(err);
       throw new Error("Internal server error" + err);
     }
-
   }
 
   private async notificacionAgente(req: Request, res: Response) {
@@ -226,11 +239,13 @@ class ReporteController extends AbstractController {
       // Envia notificacion a todos los empleados
       const io = req.app.get("socketio"); // Web Socket
       if (io) {
-        const notificacionesGlobales = await this.notificacionDiaGlobalBandera(FechaHora);
+        const notificacionesGlobales = await this.notificacionDiaGlobalBandera(
+          FechaHora
+        );
         io.emit("notificacion_global", notificacionesGlobales);
-        console.log("Notificación global enviada")
+        console.log("Notificación global enviada");
       } else {
-        console.log("No se pudo enviar la notificación global")
+        console.log("No se pudo enviar la notificación global");
       }
 
       res.status(201).json("<h1>Notificación creada con éxito</h1>");
@@ -254,11 +269,14 @@ class ReporteController extends AbstractController {
       // Envia notificacion a un empleado
       const io = req.app.get("socketio"); // Web Socket
       if (io) {
-        const notificacionEmpleado = await this.notificacionAgenteBandera(IdEmpleado,FechaHora);
+        const notificacionEmpleado = await this.notificacionAgenteBandera(
+          IdEmpleado,
+          FechaHora
+        );
         io.emit("notificacion_empleado", notificacionEmpleado);
-        console.log("Notificación empleado enviada")
+        console.log("Notificación empleado enviada");
       } else {
-        console.log("No se pudo enviar la notificación global")
+        console.log("No se pudo enviar la notificación global");
       }
 
       res.status(201).json("<h1>Notificación creada con éxito</h1>");
