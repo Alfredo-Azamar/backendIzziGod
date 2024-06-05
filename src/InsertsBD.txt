@@ -70,15 +70,15 @@ INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo, Con
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
 
-INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, IdZona) VALUES 
-('+525540066976', 'Alfredo', 'Azamar', 'López', '2000-07-23', 5),
-('+525513604788', 'Lore', 'Delgado', 'Mendoza', '1990-02-16', 5),
-('+525516399531', 'Héctor', 'González', 'Sánchez', '1890-10-29', 5),
-('+525586117753', 'José Antonio', 'Moreno', 'Tahuilan', '1918-05-23', 5),
-('+525584016051', 'Joahan', 'García', 'Fernández', '1998-05-25', 5),
-('15237817', 'Ana', 'Sánchez', 'Gutiérrez', '1992-07-20', 3),
-('22235682', 'Javier', 'Torres', 'Mendoza', '1980-01-30', 3),
-('25616832', 'Carlos', 'Pérez', 'Ramírez', '1985-10-15', 3);
+INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, Sexo, Correo, IdZona) VALUES 
+('+525540066976', 'Alfredo', 'Azamar', 'López', '2000-07-23', "masculino", "fred.mar@gmail.com", 5),
+('+525513604788', 'Lore', 'Delgado', 'Mendoza', '1990-02-16', "femenino", "lors.del@outlook.com", 5),
+('+525516399531', 'Héctor', 'González', 'Sánchez', '1890-10-29', "masculino", "hgs.rt@yahoo.com", 5),
+('+525586117753', 'José Antonio', 'Moreno', 'Tahuilan', '1918-05-23', "masculino", "pepo_PM@gmail.com", 5),
+('+525584016051', 'Joahan', 'García', 'Fernández', '1998-05-25', "masculino", "xavier_azul@icloud.com", 5),
+('15237817', 'Ana', 'Sánchez', 'Gutiérrez', '1992-07-20', "femenino", "sanchAn@gmail.com", 3),
+('22235682', 'Javier', 'Torres', 'Mendoza', '1980-01-30', "masculino", "leJaviT@outlook.com", 3),
+('25616832', 'Carlos', 'Pérez', 'Ramírez', '1985-10-15', "masculino", "carlPerezz@yahoo.com", 3);
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Contrato ~~~~~~~~~~~~~~~~~~~~~~~

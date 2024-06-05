@@ -1,11 +1,20 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
 
+
+enum SexoEnum {
+    Masculino = "masculino",
+    Femenino = "femenino",
+    Otro = "otro"
+}
+
 interface ClienteAttributes {
     Celular: string;
     Nombre: string;
     ApellidoP: string;
     ApellidoM: string;
     FechaNac: string;
+    Sexo: SexoEnum;
+    Correo: string;
 }
 
 module.exports = (sequelize: Sequelize, type: any) => {
@@ -15,6 +24,8 @@ module.exports = (sequelize: Sequelize, type: any) => {
         public ApellidoP!: string;
         public ApellidoM!: string;
         public FechaNac!: string;
+        public Sexo!: SexoEnum;
+        public Correo!: string;
 
         static associate(models: any) {
             Cliente.belongsTo(models.Zona, {
@@ -46,6 +57,17 @@ module.exports = (sequelize: Sequelize, type: any) => {
         FechaNac: {
             type: DataTypes.DATEONLY,
             allowNull: false
+        },
+        Sexo: {
+            type: DataTypes.ENUM,
+            values: Object.values(SexoEnum),
+            allowNull: false,
+            defaultValue: SexoEnum.Otro
+        },
+        Correo: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
         }
     },
         {
