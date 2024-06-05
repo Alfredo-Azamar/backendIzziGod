@@ -19,28 +19,29 @@ class LlamadaController extends AbstractController {
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get("/consultarLlamadas", this.getConsultarLlamadas.bind(this));
-    this.router.post("/crearLlamada", this.postCrearLlamada.bind(this));
-    this.router.delete("/eliminarLlamada/:id", this.deleteBorrarLlamada.bind(this));
+    this.router.get("/consultarLlamadas", this.getConsultarLlamadas.bind(this));//
+    this.router.post("/crearLlamada", this.postCrearLlamada.bind(this));//
+    this.router.delete("/eliminarLlamada/:id", this.deleteBorrarLlamada.bind(this));//
     this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));
-    this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
-    this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
-    this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
-    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this)); //Socket
-    this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
-    this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
-    this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));
-    this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
-    this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones
-    this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones
-    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this)); //Socket
-    this.router.get("/llamadasArribaDelTiempo/:duracion", this.llamadasArribaDelTiempo.bind(this));
-    this.router.get("/numPorAsunto", this.numPorAsunto.bind(this));
-    this.router.get("/llamadasPorDia", this.getLlamadasPorDiaHistorico.bind(this));
-    this.router.get("/llamadasPorHoras", this.porHoras.bind(this));
+    this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));//
+    this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));//
+    this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));//
+    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this)); //Socket //
+    this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));//
+    this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));//
+    this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));//
+    this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));//
+    this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones //
+    this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones //
+    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this)); //Socket //
+    this.router.get("/llamadasArribaDelTiempo/:duracion", this.llamadasArribaDelTiempo.bind(this));//
+    this.router.get("/numPorAsunto", this.numPorAsunto.bind(this));//
+    this.router.get("/llamadasPorDia", this.getLlamadasPorDiaHistorico.bind(this)); //
+    this.router.get("/llamadasPorHoras", this.porHoras.bind(this)); //
     this.router.get("/top4Agentes", this.top4Agentes.bind(this));
     this.router.get("/obtenerSentimiento/:IdLlamada", this.obtenerSentimiento.bind(this));
     this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
+    this.router.put("/cambiarSentiment", this.cambiarSentiment.bind(this));
   }
 
   private async obtenerSentimiento(req: Request, res: Response) {
@@ -59,6 +60,31 @@ class LlamadaController extends AbstractController {
     } catch (err: any) {
       console.log(err);
       res.status(500).send('Internal server error' + err);
+    }
+  }
+
+  private async cambiarSentiment(req: Request, res: Response) {
+    try {
+      const {id} = req.body;
+      const {sentiment} = req.body;
+      const actLlamada = await db.Llamada.update(
+        {Sentiment: sentiment},
+        {where: {IdLlamada: id}}
+      );
+      
+      const io = req.app.get("socketio");
+      if (io) {
+        io.emit("sentiment");
+        console.log("Evento emitido");
+      } else {
+        console.log("Socket.IO no está disponible");
+      }
+
+      res.status(200).send(actLlamada);
+      console.log("Sentiment actualizado");
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
     }
   }
 
