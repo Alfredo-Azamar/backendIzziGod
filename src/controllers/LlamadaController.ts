@@ -366,7 +366,6 @@ class LlamadaController extends AbstractController {
       GROUP BY 
           Cliente.Celular
       ORDER BY Empleado.IdEmpleado;
-  
       `, { type: db.sequelize.QueryTypes.SELECT });
 
       res.status(200).json(llamadas);
