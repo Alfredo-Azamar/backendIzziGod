@@ -349,16 +349,24 @@ class LlamadaController extends AbstractController {
           Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
           (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
       FROM Empleado
-      LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
-              SELECT MAX(L2.FechaHora) 
-              FROM Llamada AS L2 
-              WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+      LEFT JOIN (
+          SELECT L1.*
+          FROM Llamada AS L1
+          JOIN (
+              SELECT IdEmpleado, MAX(FechaHora) AS MaxFechaHora
+              FROM Llamada
+              GROUP BY IdEmpleado
+          ) AS L2 ON L1.IdEmpleado = L2.IdEmpleado AND L1.FechaHora = L2.MaxFechaHora
+      ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
       LEFT JOIN Cliente ON L.Celular = Cliente.Celular
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
       LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
       LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
       WHERE Empleado.Rol = 'agente'
+      GROUP BY 
+          Cliente.Celular
       ORDER BY Empleado.IdEmpleado;
+  
       `, { type: db.sequelize.QueryTypes.SELECT });
 
       res.status(200).json(llamadas);
@@ -529,7 +537,7 @@ class LlamadaController extends AbstractController {
   private async getInfoTarjetasV3() {
     try {
       const llamadas = await db.sequelize.query(`
-      SELECT DISTINCT
+      SELECT 
           L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
@@ -537,10 +545,15 @@ class LlamadaController extends AbstractController {
           Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
           (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
       FROM Empleado
-      LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
-              SELECT MAX(L2.FechaHora) 
-              FROM Llamada AS L2 
-              WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+      LEFT JOIN (
+          SELECT L1.*
+          FROM Llamada AS L1
+          JOIN (
+              SELECT IdEmpleado, MAX(FechaHora) AS MaxFechaHora
+              FROM Llamada
+              GROUP BY IdEmpleado
+          ) AS L2 ON L1.IdEmpleado = L2.IdEmpleado AND L1.FechaHora = L2.MaxFechaHora
+      ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
       LEFT JOIN Cliente ON L.Celular = Cliente.Celular
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
       LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
