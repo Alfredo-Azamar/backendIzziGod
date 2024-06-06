@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
+import { Op } from "sequelize";
 
 class EmpleadoController extends AbstractController {
   //Singleton
@@ -91,7 +92,7 @@ class EmpleadoController extends AbstractController {
 
       `, { type: db.sequelize.QueryTypes.SELECT });
 
-      res.status(200).json(llamadas);
+      return res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);

@@ -435,12 +435,12 @@ class LlamadaController extends AbstractController {
       );
 
       // Emitir evento de socket
-      const io = req.app.get("socketio");
-      if (io) {
+      const io = req.app.get("socketio"); // Web socket 
+      if (io) { // Si esta disponible
         const llamadas = await this.getInfoTarjetasV3();
         io.emit("newPage", llamadas);
         console.log("Evento emitido");
-      } else {
+      } else {  // Eror
         console.log("Socket.IO no está disponible");
       }
 
