@@ -23,17 +23,46 @@ class ReporteController extends AbstractController {
     this.router.get("/notificacionesAgente/:id/:fecha", this.notificacionAgente.bind(this));
     this.router.get("/notificacionesDiaGlobal/:fecha", this.notificacionesDiaGlobal.bind(this));
     this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
-    this.router.get("/getNOTI", this.getNoti.bind(this));
+    this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
+    this.router.get("/getNotiAgente", this.getNotiAgente.bind(this));
+    this.router.get("/getNotificacionAgente/:id", this.getNotificacionAgente.bind(this));
   }
 
-  private async getNoti(req: Request, res: Response) {
+  private async getNotificacionAgente(req: Request, res: Response) {
     try {
-      const notificaciones = await db.sequelize.query(`
-        SELECT Titulo, Descripcion, FechaHora, Empleado.Nombre
-        FROM NotiAgente
-        JOIN Notificacion ON NotiAgente.IdNotificacion = Notificacion.IdNotificacion
-        JOIN Empleado ON NotiAgente.IdEmpleado = Empleado.IdEmpleado;
-        `);
+      const { id } = req.params;
+      const idNotis = await db.NotiAgente.findAll({
+        where: {IdEmpleado: id},
+        attributes: ["IdNotificacion"]
+      })
+      //Mapear el arreglo de idNotis para buscar su descripción en la tabla Notificacion
+      const notificaciones = await db.Notificacion.findAll({
+        where: {
+          IdNotificacion: {
+            [Op.in]: idNotis.map((noti: any) => noti.IdNotificacion)
+          }
+        }
+      });
+      res.status(200).json(notificaciones);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error: " + error);
+    }
+  }
+
+  private async getNotiAgente(req: Request, res: Response) {
+    try{
+      const notiAgentec= await db.NotiAgente.findAll();
+      res.status(200).json(notiAgentec);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
+  }
+
+  private async getNotificaciones(req: Request, res: Response) {
+    try {
+      const notificaciones = await db.Notificacion.findAll();
       res.status(200).json(notificaciones);
     } catch (error: any) {
       console.log(error);
@@ -206,15 +235,7 @@ class ReporteController extends AbstractController {
 
   private async getConsultarNotificaciones(req: Request, res: Response) {
     try {
-      const notificaciones = await db.Notificacion.findAll({
-        include: [
-          {
-            model: db.Empleado,
-            as: "Empleado",
-            attributes: ["Nombre", "ApellidoP", "ApellidoM"],
-          },
-        ],
-      });
+      const notificaciones = await db.Notificacion.findAll();
       res.status(200).json(notificaciones);
     } catch (error: any) {
       console.log(error);
@@ -285,7 +306,7 @@ class ReporteController extends AbstractController {
 
   private getTest(req: Request, res: Response) {
     try {
-      console.log("Prueba exitosa");
+      console.log("Prueba exitosa :)");
       res.status(200).send("<h1>Prueba exitosa</h1>");
     } catch (error: any) {
       console.log(error);
