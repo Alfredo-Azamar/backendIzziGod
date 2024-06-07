@@ -190,8 +190,5 @@ INSERT INTO Encuesta (Pregunta, Calificacion, IdLlamada) VALUES
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Notificacion ~~~~~~~~~~~~~~~~~~~~~~~
 
 
-INSERT INTO Notificacion (EsGlobal, FechaHora, Titulo, Descripcion)
-VALUES (1, '2024-05-31 18:39:23', 'Calidad de Llamadas', 'Empleados recuerden cuidar la calidad de todas sus llamadas');
-
-INSERT INTO Notificacion (EsGlobal, FechaHora, Titulo, Descripcion, IdEmpleado)
-VALUES (0, '2024-05-31 20:39:23', 'No alterarse', 'Joahan recuerda no alterarte con las llamadas', 'andyMD');
+INSERT INTO Notificacion (FechaHora, Titulo, Descripcion)
+VALUES ('2024-05-31 18:39:23', 'Calidad de Llamadas', 'Empleados recuerden cuidar la calidad de todas sus llamadas');
