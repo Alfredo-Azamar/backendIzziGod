@@ -230,8 +230,6 @@ class LlamadaController extends AbstractController {
         console.log("Socket.IO no está disponible");
       }
 
-
-
       res.status(200).send(actLlamada);
       console.log("Llamada actualizada");
 
@@ -335,6 +333,38 @@ class LlamadaController extends AbstractController {
       return incidencia;
     } catch (err) {
       console.log(err);
+    }
+  }
+
+  private async getInfoTarjetasV3() {
+    try {
+      const llamadas = await db.sequelize.query(`
+      SELECT
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
+          Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
+          Zona.Nombre AS ZoneName, 
+          Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
+          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
+      FROM Empleado
+      LEFT JOIN (
+          SELECT L1.*
+          FROM Llamada AS L1
+          JOIN (
+              SELECT IdEmpleado, MAX(FechaHora) AS MaxFechaHora
+              FROM Llamada
+              GROUP BY IdEmpleado
+          ) AS L2 ON L1.IdEmpleado = L2.IdEmpleado AND L1.FechaHora = L2.MaxFechaHora
+      ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
+      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
+      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
+      WHERE Empleado.Rol = 'agente'
+      ORDER BY Empleado.Nombre;
+    `, { type: db.sequelize.QueryTypes.SELECT });
+
+      return llamadas;
+    } catch (err) {
+      console.log(err);
+      throw new Error("Internal server error" + err);
     }
   }
 
@@ -524,39 +554,6 @@ class LlamadaController extends AbstractController {
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
-    }
-  }
-
-
-  private async getInfoTarjetasV3() {
-    try {
-      const llamadas = await db.sequelize.query(`
-      SELECT
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
-          Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
-          Zona.Nombre AS ZoneName, 
-          Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
-          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
-      FROM Empleado
-      LEFT JOIN (
-          SELECT L1.*
-          FROM Llamada AS L1
-          JOIN (
-              SELECT IdEmpleado, MAX(FechaHora) AS MaxFechaHora
-              FROM Llamada
-              GROUP BY IdEmpleado
-          ) AS L2 ON L1.IdEmpleado = L2.IdEmpleado AND L1.FechaHora = L2.MaxFechaHora
-      ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
-      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
-      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
-      WHERE Empleado.Rol = 'agente'
-      ORDER BY Empleado.Nombre;
-    `, { type: db.sequelize.QueryTypes.SELECT });
-
-      return llamadas;
-    } catch (err) {
-      console.log(err);
-      throw new Error("Internal server error" + err);
     }
   }
 
