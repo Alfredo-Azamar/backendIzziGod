@@ -231,12 +231,10 @@ class ReporteController extends AbstractController {
         Descripcion,
       });
       
-      for (let agente of IdEmpleado) {
-        await db.NotiAgente.create({
-          IdNotificacion: notificacion.IdNotificacion,
-          IdEmpleado: agente,
-        });
-      }
+      await db.NotiAgente.create({
+        IdNotificacion: notificacion.IdNotificacion,
+        IdEmpleado,
+      });
 
       // // Envia notificacion a todos los empleados
       // const io = req.app.get("socketio"); // Web Socket
