@@ -360,7 +360,7 @@ class LlamadaController extends AbstractController {
       LEFT JOIN Cliente ON L.Celular = Cliente.Celular
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
       WHERE Empleado.Rol = 'agente'
-      ORDER BY Empleado.IdEmpleado;
+      ORDER BY Empleado.Nombre;
       `, { type: db.sequelize.QueryTypes.SELECT });
 
       res.status(200).json(llamadas);
@@ -550,7 +550,7 @@ class LlamadaController extends AbstractController {
       LEFT JOIN Cliente ON L.Celular = Cliente.Celular
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
       WHERE Empleado.Rol = 'agente'
-      ORDER BY Empleado.IdEmpleado;
+      ORDER BY Empleado.Nombre;
     `, { type: db.sequelize.QueryTypes.SELECT });
 
       return llamadas;
