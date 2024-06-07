@@ -17,31 +17,28 @@ class ReporteController extends AbstractController {
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.post(
-      "/crearNotificacion",
-      this.postCrearNotificacion.bind(this)
-    );
-    this.router.get(
-      "/consultarNotificaciones",
-      this.getConsultarNotificaciones.bind(this)
-    );
-    this.router.post(
-      "/crearNotificacionEsGlobal",
-      this.postCrearNotificacionEsGlobal.bind(this)
-    );
+    this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this));
+    this.router.get("/consultarNotificaciones", this.getConsultarNotificaciones.bind(this));
+    this.router.post("/crearNotificacionEsGlobal", this.postCrearNotificacionEsGlobal.bind(this));
+    this.router.get("/notificacionesAgente/:id/:fecha", this.notificacionAgente.bind(this));
+    this.router.get("/notificacionesDiaGlobal/:fecha", this.notificacionesDiaGlobal.bind(this));
+    this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
+    this.router.get("/getNOTI", this.getNoti.bind(this));
+  }
 
-    this.router.get(
-      "/notificacionesAgente/:id/:fecha",
-      this.notificacionAgente.bind(this)
-    );
-    this.router.get(
-      "/notificacionesDiaGlobal/:fecha",
-      this.notificacionesDiaGlobal.bind(this)
-    );
-    this.router.delete(
-      "/eliminarNotificacion/:id",
-      this.deleteNotificacion.bind(this)
-    );
+  private async getNoti(req: Request, res: Response) {
+    try {
+      const notificaciones = await db.sequelize.query(`
+        SELECT Titulo, Descripcion, FechaHora, Empleado.Nombre
+        FROM NotiAgente
+        JOIN Notificacion ON NotiAgente.IdNotificacion = Notificacion.IdNotificacion
+        JOIN Empleado ON NotiAgente.IdEmpleado = Empleado.IdEmpleado;
+        `);
+      res.status(200).json(notificaciones);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
   }
 
   private async deleteNotificacion(req: Request, res: Response) {
