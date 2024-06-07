@@ -19,18 +19,56 @@ class ReporteController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
     this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this));
     this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this));
-    this.router.get("/consultarNotificaciones", this.getConsultarNotificaciones.bind(this));
-    this.router.get("/notificacionesAgente/:id/:fecha", this.notificacionAgente.bind(this));
-    this.router.get("/notificacionesDiaGlobal/:fecha", this.notificacionesDiaGlobal.bind(this));
     this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
     this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
     this.router.get("/getNotiAgente", this.getNotiAgente.bind(this));
-    this.router.get("/getNotificacionAgente/:id", this.getNotificacionAgente.bind(this));
+    this.router.get("/getNotificacionAgente/:id/:fecha", this.getNotificacionAgente.bind(this));
+  }
+
+  private async notificacionAgenteBandera(id: any,fecha: any) {
+    try {
+      const fechaISO = new Date(fecha);
+
+      const year = fechaISO.getUTCFullYear();
+      const month = String(fechaISO.getUTCMonth() + 1).padStart(2, "0"); // Los meses empiezan desde 0
+      const day = String(fechaISO.getUTCDate()).padStart(2, "0");
+      const fechaSinHora = `${year}-${month}-${day}`;
+
+      const inicioDelDia = new Date(`${fechaSinHora}T00:00:00.000Z`);
+
+      const finDelDia = new Date(inicioDelDia.getTime() + 86400000 - 1);
+
+      const idNotis = await db.NotiAgente.findAll({
+        where: {IdEmpleado: id},
+        attributes: ["IdNotificacion"]
+      })
+
+      //Mapear el arreglo de idNotis para buscar su descripción en la tabla Notificacion
+      const notificaciones = await db.Notificacion.findAll({
+        where: {
+          IdNotificacion: {
+            [Op.in]: idNotis.map((noti: any) => noti.IdNotificacion)
+          },
+          FechaHora: {
+            [Op.between]: [inicioDelDia, finDelDia],
+          },
+        }
+      });
+
+      return notificaciones;
+
+    } catch(err: any) {
+      console.log(err);
+      throw new Error("Internal server error" + err);
+    }
   }
 
   private async getNotificacionAgente(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const { id, fecha } = req.params;
+
+      const fechaISO = `${fecha}T00:00:00.000Z`;
+
       const idNotis = await db.NotiAgente.findAll({
         where: {IdEmpleado: id},
         attributes: ["IdNotificacion"]
@@ -40,6 +78,9 @@ class ReporteController extends AbstractController {
         where: {
           IdNotificacion: {
             [Op.in]: idNotis.map((noti: any) => noti.IdNotificacion)
+          },
+          FechaHora: {
+            [Op.between]: [fechaISO, new Date(new Date(fechaISO).getTime() + 86400000)],
           }
         }
       });
@@ -83,166 +124,6 @@ class ReporteController extends AbstractController {
     }
   }
 
-  private async notificacionesDiaGlobal(req: Request, res: Response) {
-    try {
-      const { fecha } = req.params;
-
-      const fechaISO = `${fecha}T00:00:00.000Z`;
-
-      const notificaciones = await db.Notificacion.findAll({
-        where: {
-          EsGlobal: true,
-          FechaHora: {
-            [Op.between]: [
-              fechaISO,
-              new Date(new Date(fechaISO).getTime() + 86400000),
-            ], // Agregar 24 horas al final del día
-          },
-        },
-      });
-
-      if (notificaciones.length === 0) {
-        return res
-          .status(404)
-          .send(
-            "No se encontraron notificaciones globales en la fecha especificada"
-          );
-      }
-
-      res.status(200).json(notificaciones);
-    } catch (error: any) {
-      console.log(error);
-      res.status(500).send("Internal server error" + error);
-    }
-  }
-
-  private async notificacionDiaGlobalBandera(fecha: any) {
-    try {
-      const fechaISO = new Date(fecha);
-
-      const year = fechaISO.getUTCFullYear();
-      const month = String(fechaISO.getUTCMonth() + 1).padStart(2, "0"); // Los meses empiezan desde 0
-      const day = String(fechaISO.getUTCDate()).padStart(2, "0");
-      const fechaSinHora = `${year}-${month}-${day}`;
-
-      const inicioDelDia = new Date(`${fechaSinHora}T00:00:00.000Z`);
-
-      const finDelDia = new Date(inicioDelDia.getTime() + 86400000 - 1);
-
-      const notificaciones = await db.Notificacion.findAll({
-        where: {
-          EsGlobal: true,
-          FechaHora: {
-            [Op.between]: [inicioDelDia, finDelDia],
-          },
-        },
-      });
-
-      console.log(notificaciones);
-      return notificaciones;
-    } catch (err) {
-      console.log(err);
-      throw new Error("Internal server error" + err);
-    }
-  }
-
-  private async notificacionAgenteBandera(id: any, fecha: any) {
-    try {
-      const fechaISO = new Date(fecha);
-
-      const year = fechaISO.getUTCFullYear();
-      const month = String(fechaISO.getUTCMonth() + 1).padStart(2, "0"); // Los meses empiezan desde 0
-      const day = String(fechaISO.getUTCDate()).padStart(2, "0");
-      const fechaSinHora = `${year}-${month}-${day}`;
-
-      const inicioDelDia = new Date(`${fechaSinHora}T00:00:00.000Z`);
-
-      const finDelDia = new Date(inicioDelDia.getTime() + 86400000 - 1);
-
-      const empleado = await db.Empleado.findOne({
-        where: { IdEmpleado: id },
-        FechaHora: {
-          [Op.between]: [inicioDelDia, finDelDia],
-        },
-      });
-
-      if (!empleado) {
-        console.log("El empleado no existe");
-      }
-
-      const notificaciones = await db.Notificacion.findAll({
-        where: {
-          IdEmpleado: id,
-          EsGlobal: false,
-          FechaHora: {
-            [Op.between]: [
-              fechaISO,
-              new Date(new Date(fechaISO).getTime() + 86400000),
-            ], // Agregar 24 horas al final del día
-          },
-        },
-      });
-
-      console.log(notificaciones);
-      return notificaciones;
-    } catch (err) {
-      console.log(err);
-      throw new Error("Internal server error" + err);
-    }
-  }
-
-  private async notificacionAgente(req: Request, res: Response) {
-    try {
-      const { id, fecha } = req.params;
-
-      const fechaISO = `${fecha}T00:00:00.000Z`;
-
-      const empleado = await db.Empleado.findOne({
-        where: { IdEmpleado: id },
-      });
-
-      if (!empleado) {
-        return res.status(404).send("El empleado no existe");
-      }
-
-      const notificaciones = await db.Notificacion.findAll({
-        where: {
-          IdEmpleado: id,
-          EsGlobal: false,
-          FechaHora: {
-            [Op.between]: [
-              fechaISO,
-              new Date(new Date(fechaISO).getTime() + 86400000),
-            ], // Agregar 24 horas al final del día
-          },
-        },
-      });
-
-      if (notificaciones.length === 0) {
-        return res
-          .status(404)
-          .send(
-            "No se encontraron notificaciones para este empleado en la fecha especificada"
-          );
-      }
-
-      return res.status(200).json(notificaciones);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send("Error interno del servidor: " + error);
-    }
-  }
-
-  private async getConsultarNotificaciones(req: Request, res: Response) {
-    try {
-      const notificaciones = await db.Notificacion.findAll();
-      res.status(200).json(notificaciones);
-    } catch (error: any) {
-      console.log(error);
-      res.status(500).send("Internal server error" + error);
-    }
-  }
-
   private async postCrearNotificacionAgente(req: Request, res: Response) {
     try {
       const { FechaHora, Titulo, Descripcion, IdEmpleado} = req.body;
@@ -259,7 +140,7 @@ class ReporteController extends AbstractController {
         });
       }
 
-      // // Envia notificacion a todos los empleados
+      // Envia notificacion a todos los empleados
       // const io = req.app.get("socketio"); // Web Socket
       // if (io) {
       //   const notificacionesGlobales = await this.notificacionDiaGlobalBandera(
