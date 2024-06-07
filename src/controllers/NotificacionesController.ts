@@ -18,8 +18,8 @@ class ReporteController extends AbstractController {
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
     this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this));
+    this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this));
     this.router.get("/consultarNotificaciones", this.getConsultarNotificaciones.bind(this));
-    this.router.post("/crearNotificacionEsGlobal", this.postCrearNotificacionEsGlobal.bind(this));
     this.router.get("/notificacionesAgente/:id/:fecha", this.notificacionAgente.bind(this));
     this.router.get("/notificacionesDiaGlobal/:fecha", this.notificacionesDiaGlobal.bind(this));
     this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
@@ -222,28 +222,33 @@ class ReporteController extends AbstractController {
     }
   }
 
-  private async postCrearNotificacionEsGlobal(req: Request, res: Response) {
+  private async postCrearNotificacionAgente(req: Request, res: Response) {
     try {
-      const { FechaHora, Titulo, Descripcion } = req.body;
+      const { FechaHora, Titulo, Descripcion, IdEmpleado} = req.body;
       const notificacion = await db.Notificacion.create({
-        EsGlobal: true,
         FechaHora,
         Titulo,
         Descripcion,
-        IdEmpleado: null,
       });
-
-      // Envia notificacion a todos los empleados
-      const io = req.app.get("socketio"); // Web Socket
-      if (io) {
-        const notificacionesGlobales = await this.notificacionDiaGlobalBandera(
-          FechaHora
-        );
-        io.emit("notificacion_global", notificacionesGlobales);
-        console.log("Notificación global enviada");
-      } else {
-        console.log("No se pudo enviar la notificación global");
+      
+      for (let agente of IdEmpleado) {
+        await db.NotiAgente.create({
+          IdNotificacion: notificacion.IdNotificacion,
+          IdEmpleado: agente,
+        });
       }
+
+      // // Envia notificacion a todos los empleados
+      // const io = req.app.get("socketio"); // Web Socket
+      // if (io) {
+      //   const notificacionesGlobales = await this.notificacionDiaGlobalBandera(
+      //     FechaHora
+      //   );
+      //   io.emit("notificacion_global", notificacionesGlobales);
+      //   console.log("Notificación global enviada");
+      // } else {
+      //   console.log("No se pudo enviar la notificación global");
+      // }
 
       res.status(201).json("<h1>Notificación creada con éxito</h1>");
     } catch (error: any) {
@@ -254,27 +259,32 @@ class ReporteController extends AbstractController {
 
   private async postCrearNotificacion(req: Request, res: Response) {
     try {
-      const { EsGlobal, FechaHora, Titulo, Descripcion, IdEmpleado } = req.body;
-      const notificacion = await db.Notificacion.create({
-        EsGlobal,
+      // Creates new notification
+      const {FechaHora, Titulo, Descripcion} = req.body;
+      const newNoti = await db.Notificacion.create({
         FechaHora,
         Titulo,
-        Descripcion,
-        IdEmpleado,
+        Descripcion
       });
 
+      // Creates new notification for each agent
+      await db.sequelize.query(`
+        INSERT INTO NotiAgente(IdNotificacion, IdEmpleado)
+        SELECT ${newNoti.IdNotificacion}, IdEmpleado FROM Empleado WHERE Rol = 'agente';
+        `);
+
       // Envia notificacion a un empleado
-      const io = req.app.get("socketio"); // Web Socket
-      if (io) {
-        const notificacionEmpleado = await this.notificacionAgenteBandera(
-          IdEmpleado,
-          FechaHora
-        );
-        io.emit("notificacion_empleado", notificacionEmpleado);
-        console.log("Notificación empleado enviada");
-      } else {
-        console.log("No se pudo enviar la notificación global");
-      }
+      // const io = req.app.get("socketio"); // Web Socket
+      // if (io) {
+      //   const notificacionEmpleado = await this.notificacionAgenteBandera(
+      //     IdEmpleado,
+      //     FechaHora
+      //   );
+      //   io.emit("notificacion_empleado", notificacionEmpleado);
+      //   console.log("Notificación empleado enviada");
+      // } else {
+      //   console.log("No se pudo enviar la notificación global");
+      // }
 
       res.status(201).json("<h1>Notificación creada con éxito</h1>");
     } catch (error: any) {

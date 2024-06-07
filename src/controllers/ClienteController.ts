@@ -142,7 +142,7 @@ class ClienteController extends AbstractController {
     private async postCrearCliente(req: Request,res: Response){
         try{
             console.log(req.body);
-            await db.Cliente.create(req.body); //Insert
+            await db.Cliente.create(req.body);
             console.log("Cliente creado");
             res.status(200).send("<h1>Cliente creado</h1>");
         }catch(err){
