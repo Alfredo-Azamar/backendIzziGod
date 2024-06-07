@@ -341,12 +341,11 @@ class LlamadaController extends AbstractController {
   private async getInfoTarjetasV2(req: Request, res: Response) {
     try {
       const llamadas = await db.sequelize.query(`
-      SELECT DISTINCT
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
+      SELECT
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
           Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
-          Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
           (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
       FROM Empleado
       LEFT JOIN (
@@ -360,11 +359,7 @@ class LlamadaController extends AbstractController {
       ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
       LEFT JOIN Cliente ON L.Celular = Cliente.Celular
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
-      LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
-      LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
       WHERE Empleado.Rol = 'agente'
-      GROUP BY 
-          Cliente.Celular
       ORDER BY Empleado.IdEmpleado;
       `, { type: db.sequelize.QueryTypes.SELECT });
 
@@ -536,12 +531,11 @@ class LlamadaController extends AbstractController {
   private async getInfoTarjetasV3() {
     try {
       const llamadas = await db.sequelize.query(`
-      SELECT 
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
+      SELECT
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
           Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
-          Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
           (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
       FROM Empleado
       LEFT JOIN (
@@ -555,8 +549,6 @@ class LlamadaController extends AbstractController {
       ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
       LEFT JOIN Cliente ON L.Celular = Cliente.Celular
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
-      LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
-      LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
       WHERE Empleado.Rol = 'agente'
       ORDER BY Empleado.IdEmpleado;
     `, { type: db.sequelize.QueryTypes.SELECT });
