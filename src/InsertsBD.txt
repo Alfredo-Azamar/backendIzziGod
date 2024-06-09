@@ -82,9 +82,11 @@ INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo, Con
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
 
+-- ('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "masculino", "rarauwAzul@gmail.com", 5);
+
 INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, Sexo, Correo, IdZona) VALUES 
 ('+525540066976', 'Alfredo', 'Azamar', 'López', '2000-07-23', "masculino", "fred.mar@gmail.com", 5),
-
+('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "masculino", "rarauwAzul@gmail.com", 5),
 ('+525513604788', 'Lore', 'Delgado', 'Mendoza', '1990-02-16', "femenino", "lors.del@outlook.com", 5),
 ('+525516399531', 'Héctor', 'González', 'Sánchez', '1890-10-29', "masculino", "hgs.rt@yahoo.com", 5),
 ('+525586117753', 'José Antonio', 'Moreno', 'Tahuilan', '1918-05-23', "masculino", "pepo_PM@gmail.com", 5),
