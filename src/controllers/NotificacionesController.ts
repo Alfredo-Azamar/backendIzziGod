@@ -149,11 +149,18 @@ class ReporteController extends AbstractController {
       const FechaHora = moment().tz("America/Mexico_City").format();
       const subFechaHora = FechaHora.substring(0, 19);
 
-      const newNoti = await db.Notificacion.create({
-        subFechaHora,
-        Titulo,
-        Descripcion
-      });
+      console.log(subFechaHora);
+
+      const newNoti = await db.sequelize.query(`
+        INSERT INTO Notificacion(FechaHora, Titulo, Descripcion)
+        VALUES('${subFechaHora}', '${Titulo}', '${Descripcion}');
+        `);
+      
+      // const newNoti = await db.Notificacion.create({
+      //   subFechaHora,
+      //   Titulo,
+      //   Descripcion
+      // });
 
       const agentesId = await db.Empleado.findAll({
         where: {Rol: "agente"},
@@ -161,7 +168,7 @@ class ReporteController extends AbstractController {
       });
 
       const notiAgentes = agentesId.map((agente: any) => ({
-        IdNotificacion: newNoti.IdNotificacion,
+        IdNotificacion: newNoti[0],
         IdEmpleado: agente.IdEmpleado
       }));
 
