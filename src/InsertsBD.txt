@@ -65,7 +65,9 @@ INSERT INTO Incidencia (Nombre) VALUES
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Empleado ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo, Contra) VALUES 
-('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'karicm@gmail.com', '1234Password'),
+('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'karicm@gmail.com', '1234Password'), 
+('2', 'supervisor', 'Freddy', 'Azamar', 'López', 'A01798100@tec.mx', 'zzzZZZzzz'),
+
 ('joahan11', 'agente', 'Javier', 'García', 'Fernández', 'A01748222@tec.mx', 'Password1234'),
 ('luisaM2', 'agente', 'Luisa', 'González', 'Martínez', 'LuisaGZ@gmail.com', 'SecurePass5678'),
 ('paquitoS', 'agente', 'Paco', 'Ávila', 'Bautista', 'PaKoAvil@gmail.com', '12345678'),
