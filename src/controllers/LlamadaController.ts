@@ -18,14 +18,14 @@ class LlamadaController extends AbstractController {
 
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
-    this.router.get("/test", this.getTest.bind(this));
-    this.router.get("/consultarLlamadas", this.getConsultarLlamadas.bind(this));
+    this.router.get("/test", this.authMiddleware.verifyToken, this.getTest.bind(this));
+    this.router.get("/consultarLlamadas", this.authMiddleware.verifyToken, this.getConsultarLlamadas.bind(this));
     this.router.post("/crearLlamada", this.postCrearLlamada.bind(this));
     this.router.delete("/eliminarLlamada/:id", this.deleteBorrarLlamada.bind(this));//
     this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));//unknown
     this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
-    this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
+    this.router.get("/infoTarjetasV2", this.authMiddleware.verifyToken, this.getInfoTarjetasV2.bind(this));
     this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this)); //Socket 
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
     this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
