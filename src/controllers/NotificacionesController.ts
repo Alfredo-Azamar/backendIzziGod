@@ -17,57 +17,17 @@ class ReporteController extends AbstractController {
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this));
-    this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this));
+    this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this)); //GLOBAL
+    this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this)); //AGENTE
     this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
     this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
-    this.router.get("/getNotiAgente", this.getNotiAgente.bind(this));
-    this.router.get("/getNotificacionAgente/:id/:fecha", this.getNotificacionAgente.bind(this));
-  }
-
-  private async notificacionAgenteBandera(id: any,fecha: any) {
-    try {
-      const fechaISO = new Date(fecha);
-
-      const year = fechaISO.getUTCFullYear();
-      const month = String(fechaISO.getUTCMonth() + 1).padStart(2, "0"); // Los meses empiezan desde 0
-      const day = String(fechaISO.getUTCDate()).padStart(2, "0");
-      const fechaSinHora = `${year}-${month}-${day}`;
-
-      const inicioDelDia = new Date(`${fechaSinHora}T00:00:00.000Z`);
-
-      const finDelDia = new Date(inicioDelDia.getTime() + 86400000 - 1);
-
-      const idNotis = await db.NotiAgente.findAll({
-        where: {IdEmpleado: id},
-        attributes: ["IdNotificacion"]
-      })
-
-      //Mapear el arreglo de idNotis para buscar su descripción en la tabla Notificacion
-      const notificaciones = await db.Notificacion.findAll({
-        where: {
-          IdNotificacion: {
-            [Op.in]: idNotis.map((noti: any) => noti.IdNotificacion)
-          },
-          FechaHora: {
-            [Op.between]: [inicioDelDia, finDelDia],
-          },
-        }
-      });
-
-      return notificaciones;
-
-    } catch(err: any) {
-      console.log(err);
-      throw new Error("Internal server error" + err);
-    }
+    this.router.get("/getNotisAgentes", this.getNotisAgentes.bind(this));
+    this.router.get("/getNotificacionAgente/:id", this.getNotificacionAgente.bind(this));
   }
 
   private async getNotificacionAgente(req: Request, res: Response) {
     try {
-      const { id, fecha } = req.params;
-
-      const fechaISO = `${fecha}T00:00:00.000Z`;
+      const { id } = req.params;
 
       const idNotis = await db.NotiAgente.findAll({
         where: {IdEmpleado: id},
@@ -78,11 +38,9 @@ class ReporteController extends AbstractController {
         where: {
           IdNotificacion: {
             [Op.in]: idNotis.map((noti: any) => noti.IdNotificacion)
-          },
-          FechaHora: {
-            [Op.between]: [fechaISO, new Date(new Date(fechaISO).getTime() + 86400000)],
           }
-        }
+        },
+        attributes: ["Titulo", "Descripcion"]
       });
       res.status(200).json(notificaciones);
     } catch (error: any) {
@@ -91,7 +49,7 @@ class ReporteController extends AbstractController {
     }
   }
 
-  private async getNotiAgente(req: Request, res: Response) {
+  private async getNotisAgentes(req: Request, res: Response) {
     try{
       const notiAgentec= await db.NotiAgente.findAll();
       res.status(200).json(notiAgentec);
@@ -139,21 +97,45 @@ class ReporteController extends AbstractController {
       });
 
       // Envia notificacion a todos los empleados
-      // const io = req.app.get("socketio"); // Web Socket
-      // if (io) {
-      //   const notificacionesGlobales = await this.notificacionDiaGlobalBandera(
-      //     FechaHora
-      //   );
-      //   io.emit("notificacion_global", notificacionesGlobales);
-      //   console.log("Notificación global enviada");
-      // } else {
-      //   console.log("No se pudo enviar la notificación global");
-      // }
+      const io = req.app.get("socketio"); // Web Socket
+      if (io) {
+        const notificacionEmpleado = await this.notificacionAgenteBandera(
+          IdEmpleado
+        );
+        io.emit("notificacion_Empleado", notificacionEmpleado);
+        console.log("Notificación enviada a empleado: " + IdEmpleado);
+      } else {
+        console.log("No se pudo enviar la notificación global");
+      }
 
       res.status(201).json("<h1>Notificación creada con éxito</h1>");
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Internal server error" + error);
+    }
+  }
+
+  private async notificacionAgenteBandera(id: any) {
+    try {
+      const idNotis = await db.NotiAgente.findAll({
+        where: {IdEmpleado: id},
+        attributes: ["IdNotificacion"]
+      })
+
+      //Mapear el arreglo de idNotis para buscar su descripción en la tabla Notificacion
+      const notificaciones = await db.Notificacion.findAll({
+        where: {
+          IdNotificacion: {
+            [Op.in]: idNotis.map((noti: any) => noti.IdNotificacion)
+          }
+        }
+      });
+
+      return notificaciones;
+
+    } catch(err: any) {
+      console.log(err);
+      throw new Error("Internal server error" + err);
     }
   }
 
@@ -167,24 +149,32 @@ class ReporteController extends AbstractController {
         Descripcion
       });
 
-      // Creates new notification for each agent
-      await db.sequelize.query(`
-        INSERT INTO NotiAgente(IdNotificacion, IdEmpleado)
-        SELECT ${newNoti.IdNotificacion}, IdEmpleado FROM Empleado WHERE Rol = 'agente';
-        `);
+      const agentesId = await db.Empleado.findAll({
+        where: {Rol: "agente"},
+        attributes: ["IdEmpleado"]
+      });
 
-      // Envia notificacion a un empleado
-      // const io = req.app.get("socketio"); // Web Socket
-      // if (io) {
-      //   const notificacionEmpleado = await this.notificacionAgenteBandera(
-      //     IdEmpleado,
-      //     FechaHora
-      //   );
-      //   io.emit("notificacion_empleado", notificacionEmpleado);
-      //   console.log("Notificación empleado enviada");
-      // } else {
-      //   console.log("No se pudo enviar la notificación global");
-      // }
+      const notiAgentes = agentesId.map((agente: any) => ({
+        IdNotificacion: newNoti.IdNotificacion,
+        IdEmpleado: agente.IdEmpleado
+      }));
+
+      await db.NotiAgente.bulkCreate(notiAgentes);  // Inserta los datos de notiAgentes a la tabla
+
+      // Envia notificacion a todos los empleados
+      const io = req.app.get("socketio"); // Web Socket
+      if (io) {
+        let count = 0;
+        for (const agente of agentesId) {
+          const notificacionEmpleado = await this.notificacionAgenteBandera(agente.IdEmpleado);
+          console.log("Notificación enviada a empleado: " + agente.IdEmpleado);
+          io.emit("notificacion_empleado", notificacionEmpleado);
+          count++;
+        }
+        console.log("Notificación empleado enviada" + count + " veces");
+      } else { 
+        console.log("No se pudo enviar la notificación global");
+      }
 
       res.status(201).json("<h1>Notificación creada con éxito</h1>");
     } catch (error: any) {
