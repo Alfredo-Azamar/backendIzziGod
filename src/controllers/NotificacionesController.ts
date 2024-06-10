@@ -20,9 +20,6 @@ class ReporteController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
     this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this));
     this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this));
-    this.router.get("/consultarNotificaciones", this.getConsultarNotificaciones.bind(this));
-    this.router.get("/notificacionesAgente/:id/:fecha", this.notificacionAgente.bind(this));
-    this.router.get("/notificacionesDiaGlobal/:fecha", this.notificacionesDiaGlobal.bind(this));
     this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
     this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
     this.router.get("/getNotisAgentes", this.getNotisAgentes.bind(this));
