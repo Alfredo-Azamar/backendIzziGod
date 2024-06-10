@@ -88,20 +88,12 @@ class ReporteController extends AbstractController {
       const {Titulo, Descripcion, IdEmpleado} = req.body;
       const FechaHora = moment().tz("America/Mexico_City").format();
       const subFechaHora = FechaHora.substring(0, 19);
-      console.log(FechaHora);
+      
       const notificacion = await db.sequelize.query(`
         INSERT INTO Notificacion(FechaHora, Titulo, Descripcion)
         VALUES('${subFechaHora}', '${Titulo}', '${Descripcion}');
         `);
-
-      // const notificacion = await db.Notificacion.create({
-      //   FechaHora,
-      //   Titulo,
-      //   Descripcion,
-      // });
-
-      console.log(notificacion[0]);
-      
+    
       await db.NotiAgente.create({
         IdNotificacion: notificacion[0],
         IdEmpleado,
@@ -153,10 +145,12 @@ class ReporteController extends AbstractController {
   private async postCrearNotificacion(req: Request, res: Response) {
     try {
       // Creates new notification
-      const {FechaHora, Titulo, Descripcion} = req.body;
+      const {Titulo, Descripcion} = req.body;
+      const FechaHora = moment().tz("America/Mexico_City").format();
+      const subFechaHora = FechaHora.substring(0, 19);
 
       const newNoti = await db.Notificacion.create({
-        FechaHora,
+        subFechaHora,
         Titulo,
         Descripcion
       });
