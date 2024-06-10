@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
 import { Op, where } from "sequelize";
+import moment from 'moment-timezone';
 
 class ReporteController extends AbstractController {
   //Singleton
@@ -17,7 +18,7 @@ class ReporteController extends AbstractController {
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this));
+    this.router.post("/crearNotificacion", this.authMiddleware.verifyToken, this.postCrearNotificacion.bind(this));
     this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this));
     this.router.get("/consultarNotificaciones", this.getConsultarNotificaciones.bind(this));
     this.router.get("/notificacionesAgente/:id/:fecha", this.notificacionAgente.bind(this));
@@ -224,15 +225,25 @@ class ReporteController extends AbstractController {
 
   private async postCrearNotificacionAgente(req: Request, res: Response) {
     try {
-      const { FechaHora, Titulo, Descripcion, IdEmpleado} = req.body;
-      const notificacion = await db.Notificacion.create({
-        FechaHora,
-        Titulo,
-        Descripcion,
-      });
+      const {Titulo, Descripcion, IdEmpleado} = req.body;
+      const FechaHora = moment().tz("America/Mexico_City").format();
+      const subFechaHora = FechaHora.substring(0, 19);
+      console.log(FechaHora);
+      const notificacion = await db.sequelize.query(`
+        INSERT INTO Notificacion(FechaHora, Titulo, Descripcion)
+        VALUES('${subFechaHora}', '${Titulo}', '${Descripcion}');
+        `);
+
+      // const notificacion = await db.Notificacion.create({
+      //   FechaHora,
+      //   Titulo,
+      //   Descripcion,
+      // });
+
+      console.log(notificacion[0]);
       
       await db.NotiAgente.create({
-        IdNotificacion: notificacion.IdNotificacion,
+        IdNotificacion: notificacion[0],
         IdEmpleado,
       });
 

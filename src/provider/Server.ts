@@ -25,7 +25,7 @@ class Server{
         this.loadRoutes(appInit.controllers);
         this.connectDB();
         
-        this.app.use(cors());
+        // this.app.use(cors());
 
         this.server = createServer(this.app);
         this.io = new SocketIOServer(this.server, {

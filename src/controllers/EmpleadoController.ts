@@ -101,6 +101,7 @@ class EmpleadoController extends AbstractController {
 
   private async getCalificacionPromedio(req: Request, res: Response) {
     try {
+      //Comment
       const { id } = req.params;
 
       const empleado = await db.Empleado.findOne({

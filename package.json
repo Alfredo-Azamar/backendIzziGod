@@ -33,6 +33,7 @@
     "joi": "^17.13.0",
     "jsonwebtoken": "^9.0.2",
     "jwk-to-pem": "^2.0.5",
+    "moment-timezone": "^0.5.45",
     "mysql2": "^3.9.4",
     "node-fetch": "^3.3.2",
     "sequelize": "^6.37.2",

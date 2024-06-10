@@ -59,7 +59,7 @@ class ClienteController extends AbstractController {
                 res.status(404).send('Cliente not found');
                 return;
             }
-
+            //Comment on tables visited
             const zona = await db.Zona.findOne({
                 where: { IdZona: cliente.IdZona },
                 attributes: ['Nombre']
