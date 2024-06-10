@@ -272,7 +272,7 @@ class ReporteController extends AbstractController {
         SELECT ${newNoti.IdNotificacion}, IdEmpleado FROM Empleado WHERE Rol = 'agente';
         `);
 
-      // Envia notificacion a un empleado
+      // // Envia notificacion a un empleado
       // const io = req.app.get("socketio"); // Web Socket
       // if (io) {
       //   const notificacionEmpleado = await this.notificacionAgenteBandera(

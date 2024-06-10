@@ -24,7 +24,7 @@ class ConnectController extends AbstractController {
 
     // Inicializar las rutas
     protected initRoutes(): void {
-        this.router.get('/sentiment/:coso', this.sendSentiment.bind(this));
+        this.router.get('/sentiment/:idLlamada', this.sendSentiment.bind(this));
         this.router.get('/queue', this.getQueue.bind(this));
     }
 
@@ -36,15 +36,14 @@ class ConnectController extends AbstractController {
             region: AWS_REGION
         });
 
-        const connect = new AWS.Connect();
+        // const connect = new AWS.Connect();
 
-        // const { coso } = req.body;
-        const {coso} = req.params;
-        console.log(coso);
+        const {idLlamada} = req.params;
+        console.log(idLlamada);
 
         const params = {
             InstanceId: "arn:aws:connect:us-east-1:905418447691:instance/cbfa02b8-09e5-4774-8576-45965720fb02",
-            ContactId: coso
+            ContactId: idLlamada
         };
 
         const command = new ListRealtimeContactAnalysisSegmentsCommand(params);

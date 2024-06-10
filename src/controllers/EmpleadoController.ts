@@ -14,44 +14,25 @@ class EmpleadoController extends AbstractController {
     }
     return this._instance;
   }
+
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get(
-      "/consultarEmpleados",
-      this.getConsultarEmpleados.bind(this)
-    );
-    this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));
-    this.router.delete(
-      "/eliminarEmpleado/:id",
-      this.deleteBorrarEmpleado.bind(this)
-    );
-    this.router.get(
-      "/calificacionPromedio/:id",
-      this.getCalificacionPromedio.bind(this)
-    );
+    this.router.get("/consultarEmpleados", this.getConsultarEmpleados.bind(this));//
+    this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));//
+    this.router.delete("/eliminarEmpleado/:id", this.deleteBorrarEmpleado.bind(this));//
+    this.router.get("/calificacionPromedio/:id", this.getCalificacionPromedio.bind(this));//
+
     // Api para mostrar el promedio de la calificacion de las llamadas de un empleado en un día
     // Ejemplo de petición:
     // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
-    this.router.get(
-      "/califPromDia/:id/calificaciones/:date",
-      this.getCalifPromDia.bind(this)
-    );
-    this.router.get(
-      "/consultarLlamadasEmpleado/:id",
-      this.getSumLlamadasEmpleado.bind(this)
-    );
-    this.router.get(
-      "/consutarEmpleado/:id",
-      this.getConsultarEmpleado.bind(this)
-    );
+    this.router.get("/califPromDia/:id/calificaciones/:date", this.getCalifPromDia.bind(this));//ERROR
+    this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this));//
+    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));//
     // Api para mostrar el promedio de llamadas por agente
-    this.router.get(
-      "/consultarPromLlamadasEmpleado/:id",
-      this.getPromLlamadasEmpleado.bind(this)
-    );
-      this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
-      this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this)); 
+    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));//
+    this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones //
+    this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this)); 
   }
 
   private async EMERGENCIA(req: Request, res: Response) {

@@ -15,15 +15,15 @@ class ClienteController extends AbstractController {
     }
     // Declarar todas las rutas del controlador
     protected initRoutes(): void {
-        this.router.get('/test',this.getTest.bind(this));
-        this.router.get('/consultarClientes',this.getConsultarClientes.bind(this));
-        this.router.post('/crearCliente',this.postCrearCliente.bind(this));
-        this.router.delete('/eliminarCliente/:id',this.deleteBorrarCliente.bind(this));
-        this.router.get('/consultarContrato',this.getConsultarContrato.bind(this));
-        this.router.post('/crearContrato',this.postCrearContrato.bind(this));
+        this.router.get('/test', this.getTest.bind(this));
+        this.router.get('/consultarClientes', this.getConsultarClientes.bind(this));
+        this.router.post('/crearCliente', this.postCrearCliente.bind(this));
+        this.router.delete('/eliminarCliente/:id', this.deleteBorrarCliente.bind(this));
+        this.router.get('/consultarContrato', this.getConsultarContrato.bind(this));
+        this.router.post('/crearContrato', this.postCrearContrato.bind(this));
         this.router.put('/actualizarContrato/:id', this.putActualizarContrato.bind(this));//* NO IMPLEMENTADO EN APPS
         this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));
-        this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this)); //MAX
+        this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this));
         this.router.get('/telefonoPorZona/:nombreZona', this.getTelefonoPorZona.bind(this));
         this.router.get('/paquetesPorCliente/:celular', this.getPaquetesPorCliente.bind(this)); 
     }
@@ -154,7 +154,7 @@ class ClienteController extends AbstractController {
     private async deleteBorrarCliente(req: Request,res: Response){
         try{
             const {id} = req.params;
-            await db.Cliente.destroy({where:{IdCliente:id}});
+            await db.Cliente.destroy({where:{Celular:id}});
             res.status(200).send("<h1>Cliente eliminado</h1>");
         } catch(err) {
             console.log(err);

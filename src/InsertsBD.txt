@@ -178,7 +178,9 @@ INSERT INTO Llamada (IdLlamada, FechaHora, Notas, Estado, Sentiment, Asunto, IdE
 
 
 INSERT INTO Encuesta (Pregunta, Calificacion, IdLlamada) VALUES
-(1, 5, "call1"),
+(1, 3, "7811ce99-6f6c-45d8-9e20-071aada01b2c"),
+(2, 1, "7811ce99-6f6c-45d8-9e20-071aada01b2c"),
+(3, 1, "7811ce99-6f6c-45d8-9e20-071aada01b2c"),
 (1, 4, "call2"),
 (1, 2, "call3"),
 (1, 1, "call4"),
