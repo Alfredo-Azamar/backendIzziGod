@@ -65,7 +65,9 @@ INSERT INTO Incidencia (Nombre) VALUES
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Empleado ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo, Contra) VALUES 
-('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'karicm@gmail.com', '1234Password'),
+('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'karicm@gmail.com', '1234Password'), 
+('2', 'supervisor', 'Freddy', 'Azamar', 'López', 'A01798100@tec.mx', 'zzzZZZzzz'),
+
 ('joahan11', 'agente', 'Javier', 'García', 'Fernández', 'A01748222@tec.mx', 'Password1234'),
 ('luisaM2', 'agente', 'Luisa', 'González', 'Martínez', 'LuisaGZ@gmail.com', 'SecurePass5678'),
 ('paquitoS', 'agente', 'Paco', 'Ávila', 'Bautista', 'PaKoAvil@gmail.com', '12345678'),
@@ -82,9 +84,11 @@ INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo, Con
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
 
+-- ('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "masculino", "rarauwAzul@gmail.com", 5);
+
 INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, Sexo, Correo, IdZona) VALUES 
 ('+525540066976', 'Alfredo', 'Azamar', 'López', '2000-07-23', "masculino", "fred.mar@gmail.com", 5),
-
+('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "masculino", "rarauwAzul@gmail.com", 5),
 ('+525513604788', 'Lore', 'Delgado', 'Mendoza', '1990-02-16', "femenino", "lors.del@outlook.com", 5),
 ('+525516399531', 'Héctor', 'González', 'Sánchez', '1890-10-29', "masculino", "hgs.rt@yahoo.com", 5),
 ('+525586117753', 'José Antonio', 'Moreno', 'Tahuilan', '1918-05-23', "masculino", "pepo_PM@gmail.com", 5),
@@ -176,7 +180,9 @@ INSERT INTO Llamada (IdLlamada, FechaHora, Notas, Estado, Sentiment, Asunto, IdE
 
 
 INSERT INTO Encuesta (Pregunta, Calificacion, IdLlamada) VALUES
-(1, 5, "call1"),
+(1, 3, "7811ce99-6f6c-45d8-9e20-071aada01b2c"),
+(2, 1, "7811ce99-6f6c-45d8-9e20-071aada01b2c"),
+(3, 1, "7811ce99-6f6c-45d8-9e20-071aada01b2c"),
 (1, 4, "call2"),
 (1, 2, "call3"),
 (1, 1, "call4"),

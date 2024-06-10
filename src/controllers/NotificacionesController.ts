@@ -143,6 +143,7 @@ class ReporteController extends AbstractController {
     try {
       // Creates new notification
       const {FechaHora, Titulo, Descripcion} = req.body;
+
       const newNoti = await db.Notificacion.create({
         FechaHora,
         Titulo,
