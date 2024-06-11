@@ -16,15 +16,15 @@ class ClienteController extends AbstractController {
     // Declarar todas las rutas del controlador
     protected initRoutes(): void {
         this.router.get('/test', this.getTest.bind(this));
-        this.router.get('/consultarClientes', this.authMiddleware.verifyToken, this.getConsultarClientes.bind(this));
-        this.router.post('/crearCliente', this.authMiddleware.verifyToken, this.postCrearCliente.bind(this));
-        this.router.delete('/eliminarCliente/:id', this.authMiddleware.verifyToken, this.deleteBorrarCliente.bind(this));
-        this.router.get('/consultarContrato', this.authMiddleware.verifyToken, this.getConsultarContrato.bind(this));
-        this.router.post('/crearContrato', this.authMiddleware.verifyToken, this.postCrearContrato.bind(this));
-        this.router.delete('/eliminarContrato/:id', this.authMiddleware.verifyToken, this.deleteBorrarContrato.bind(this));
-        this.router.get('/consultarCliente/:celular', this.authMiddleware.verifyToken, this.getConsultarCliente.bind(this));
-        this.router.get('/telefonoPorZona/:nombreZona', this.authMiddleware.verifyToken, this.getTelefonoPorZona.bind(this));
-        this.router.get('/paquetesPorCliente/:celular', this.authMiddleware.verifyToken, this.getPaquetesPorCliente.bind(this)); 
+        this.router.get('/consultarClientes', this.getConsultarClientes.bind(this));
+        this.router.post('/crearCliente', this.postCrearCliente.bind(this));
+        this.router.delete('/eliminarCliente/:id', this.deleteBorrarCliente.bind(this));
+        this.router.get('/consultarContrato', this.getConsultarContrato.bind(this));
+        this.router.post('/crearContrato', this.postCrearContrato.bind(this));
+        this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));
+        this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this));
+        this.router.get('/telefonoPorZona/:nombreZona', this.getTelefonoPorZona.bind(this));
+        this.router.get('/paquetesPorCliente/:celular', this.getPaquetesPorCliente.bind(this)); 
     }
 
 
