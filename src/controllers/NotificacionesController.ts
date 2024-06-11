@@ -20,7 +20,6 @@ class ReporteController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
     this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this));
     this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this));
-    this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
     this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
     this.router.get("/getNotisAgentes", this.getNotisAgentes.bind(this));
     this.router.get("/getNotificacionAgente/:id", this.getNotificacionAgente.bind(this));
@@ -64,19 +63,6 @@ class ReporteController extends AbstractController {
     try {
       const notificaciones = await db.Notificacion.findAll();
       res.status(200).json(notificaciones);
-    } catch (error: any) {
-      console.log(error);
-      res.status(500).send("Internal server error" + error);
-    }
-  }
-
-  private async deleteNotificacion(req: Request, res: Response) {
-    try {
-
-      const {id} = req.params;
-      await db.Notificacion.destroy({where:{IdNotificacion:id}});
-      res.status(200).send("Notificación eliminada correctamente");
-
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Internal server error" + error);

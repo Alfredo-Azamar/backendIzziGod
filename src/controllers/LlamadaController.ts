@@ -21,8 +21,10 @@ class LlamadaController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
     this.router.get("/consultarLlamadas", this.getConsultarLlamadas.bind(this));
     this.router.post("/crearLlamada", this.postCrearLlamada.bind(this));
-    this.router.delete("/eliminarLlamada/:id", this.deleteBorrarLlamada.bind(this));
+
     this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));//unknown
+
+    
     this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
@@ -574,17 +576,6 @@ class LlamadaController extends AbstractController {
       }
 
       res.status(200).send("<h1>Llamada creada</h1>");
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error" + err);
-    }
-  }
-
-  private async deleteBorrarLlamada(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      await db.Llamada.destroy({ where: { IdLlamada: id } });
-      res.status(200).send("<h1>Llamada eliminada</h1>");
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
