@@ -21,7 +21,7 @@ class LlamadaController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
     this.router.get("/consultarLlamadas", this.getConsultarLlamadas.bind(this));
     this.router.post("/crearLlamada", this.postCrearLlamada.bind(this));
-    this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));//Missing on Postman
+    this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));
     this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));

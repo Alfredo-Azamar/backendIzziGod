@@ -28,7 +28,6 @@ class EmpleadoController extends AbstractController {
     this.router.get("/califPromDia/:id/calificaciones/:date", this.getCalifPromDia.bind(this));//ERROR
     this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this));
     this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
-    // Api para mostrar el promedio de llamadas por agente
     this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));
     this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
     this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
