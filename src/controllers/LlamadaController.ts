@@ -21,10 +21,7 @@ class LlamadaController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
     this.router.get("/consultarLlamadas", this.getConsultarLlamadas.bind(this));
     this.router.post("/crearLlamada", this.postCrearLlamada.bind(this));
-
-    this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));//unknown
-
-    
+    this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));//Missing on Postman
     this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
@@ -40,7 +37,7 @@ class LlamadaController extends AbstractController {
     this.router.get("/numPorAsunto", this.numPorAsunto.bind(this));
     this.router.get("/llamadasPorDia", this.getLlamadasPorDiaHistorico.bind(this));
     this.router.get("/llamadasPorHoras", this.porHoras.bind(this));
-    this.router.get("/top4Agentes", this.top4Agentes.bind(this));
+    this.router.get("/topAgents/:num", this.topAgentes.bind(this));
     this.router.get("/obtenerSentimiento/:IdLlamada", this.obtenerSentimiento.bind(this));
     this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
     this.router.put("/cambiarSentiment", this.cambiarSentiment.bind(this));
@@ -108,8 +105,9 @@ class LlamadaController extends AbstractController {
     }
   }
 
-  private async top4Agentes(req: Request, res: Response) {
+  private async topAgentes(req: Request, res: Response) {
     try {
+      const {num} = req.params;
       const agentes = await db.sequelize.query(
         `SELECT Nombre, ApellidoP, AVG(Calificacion) AS cali
         FROM Llamada
@@ -117,7 +115,7 @@ class LlamadaController extends AbstractController {
         JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
         GROUP BY Llamada.IdEmpleado
         ORDER BY Llamada.IdEmpleado DESC
-        LIMIT 4;`,
+        LIMIT ${num};`,
         { type: db.sequelize.QueryTypes.SELECT });
       res.status(200).json(agentes);
     } catch (err) {
