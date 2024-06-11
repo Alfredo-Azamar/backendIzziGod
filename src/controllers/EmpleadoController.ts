@@ -77,7 +77,7 @@ class EmpleadoController extends AbstractController {
       res.status(500).send("Internal server error" + err);
     }
   }
-
+  
   private async getConsultarEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -148,63 +148,60 @@ class EmpleadoController extends AbstractController {
   }
 
   // Función que calcula el promedio de la calificacion de las llamadas de un empleado en un día
+  // -----------------------------  INICIO DE LA FUNCION CORREGIDA --------------------------------
   private async getCalifPromDia(req: Request, res: Response) {
     try {
-      const { id, date } = req.params;
-
+      const { id, fecha } = req.params;
+  
       const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
       });
-
+  
       if (!empleado) {
         return res.status(404).send("El empleado no existe");
       }
-
-      // Conversión de la fecha a un formato general
-      const startDate = new Date(date);
-      const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 1);
-
-      // Obtener las llamadas y las califs en una fecha específica
-      const llamadasCalif = await db.Llamada.findAll({
-        where: {
+  
+      const llamadasEmpleado = await db.Llamada.findAll({
+        where: { 
           IdEmpleado: id,
-          Fecha: {
-            [ Op.between]: [startDate, endDate],
-          },
+          fecha: new Date(fecha)
         },
-        include: {
-          model: db.Encuesta,
-          attributes: ["Calificacion"],
-        },
+        attributes: ["IdLlamada"],
       });
-
-      if (llamadasCalif.length === 0) {
-        return res
-          .status(404)
-          .send(
-            "No se encontraron llamadas para este empleado en la fecha indicada"
-          );
-      }
-
-      // calcular el promedio de calificaciones
-      let sumCalifs = 0;
-      let totalCalifs = 0;
-
-      for (const llamada of llamadasCalif) {
-        for (const encuesta of llamada.Encuestas) {
-          sumCalifs += encuesta.Calificacion;
-          totalCalifs++;
+  
+      if (llamadasEmpleado && llamadasEmpleado.length > 0) {
+        let sumatoriaCalificaciones = 0;
+        let totalLlamadas = 0;
+  
+        for (const llamada of llamadasEmpleado) {
+          const encuestasLlamada = await db.Encuesta.findAll({
+            where: { IdLlamada: llamada.IdLlamada },
+            attributes: ["Calificacion"],
+          });
+  
+          if (encuestasLlamada && encuestasLlamada.length > 0) {
+            const sumCalificacionesLlamada = encuestasLlamada.reduce(
+              (sum: number, encuesta: any) => sum + encuesta.Calificacion,
+              0
+            );
+            sumatoriaCalificaciones += sumCalificacionesLlamada;
+            totalLlamadas += encuestasLlamada.length;
+          }
         }
+  
+        const promedioGeneral =
+          totalLlamadas > 0 ? sumatoriaCalificaciones / totalLlamadas : 0;
+  
+        res.status(200).json({ promedioGeneral });
+      } else {
+        res.status(404).send("No se encontraron llamadas para este empleado en la fecha especificada");
       }
-
-      const promGeneral = totalCalifs > 0 ? sumCalifs / totalCalifs : 0;
-      res.status(200).json({ promGeneral });
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Error interno del servidor: " + error);
     }
   }
+  // -----------------------------  FIN DE LA FUNCION CORREGIDA --------------------------------
 
   private getTest(req: Request, res: Response) {
     try {
