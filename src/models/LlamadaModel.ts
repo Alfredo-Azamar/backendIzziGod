@@ -52,6 +52,10 @@ module.exports = (sequelize: any, DataTypes: any) => {
         foreignKey: "IdSolucion",
         as: "Solucion",
       });
+      Llamada.hasOne(models.Encuesta, {
+        foreignKey: "IdLlamada",
+        as: "Encuesta",
+      });
     }
   }
   Llamada.init(

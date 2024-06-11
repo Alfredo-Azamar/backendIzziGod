@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
+import {Op} from "sequelize";
 
 class EmpleadoController extends AbstractController {
   //Singleton
@@ -169,12 +170,13 @@ class EmpleadoController extends AbstractController {
       const llamadasCalif = await db.Llamada.findAll({
         where: {
           IdEmpleado: id,
-          Fecha: {
-            [db.Op.between]: [startDate, endDate],
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
           },
         },
         include: {
           model: db.Encuesta,
+          as: "Encuesta",
           attributes: ["Calificacion"],
         },
       });
@@ -192,8 +194,8 @@ class EmpleadoController extends AbstractController {
       let totalCalifs = 0;
 
       for (const llamada of llamadasCalif) {
-        for (const encuesta of llamada.Encuestas) {
-          sumCalifs += encuesta.Calificacion;
+        if (llamada.Encuesta) { // Check if Encuesta exists for the llamada
+          sumCalifs += llamada.Encuesta.Calificacion;
           totalCalifs++;
         }
       }
