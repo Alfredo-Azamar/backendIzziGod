@@ -18,8 +18,8 @@ class ReporteController extends AbstractController {
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
     this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this)); //GLOBAL
-    this.router.post("/crearNotificacionAgentes", this.postCrearNotificacionAgente.bind(this)); //AGENTE
-    this.router.delete("/eliminarNotificacion/:id", this.deleteNotificacion.bind(this));
+    this.router.post("/crearNotificacionAgente", this.postCrearNotificacionAgente.bind(this)); //AGENTE
+    this.router.delete("/eliminarNotificacion/:idNoti/:idAgente", this.deleteNotificacion.bind(this));
     this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
     this.router.get("/getNotisAgentes", this.getNotisAgentes.bind(this));
     this.router.get("/getNotificacionAgente/:id", this.getNotificacionAgente.bind(this));
@@ -40,7 +40,7 @@ class ReporteController extends AbstractController {
             [Op.in]: idNotis.map((noti: any) => noti.IdNotificacion)
           }
         },
-        attributes: ["Titulo", "Descripcion"]
+        attributes: ["IdNotificacion","Titulo", "Descripcion"]
       });
       res.status(200).json(notificaciones);
     } catch (error: any) {
@@ -71,9 +71,15 @@ class ReporteController extends AbstractController {
 
   private async deleteNotificacion(req: Request, res: Response) {
     try {
-
-      const {id} = req.params;
-      await db.Notificacion.destroy({where:{IdNotificacion:id}});
+      const {idNoti, idAgente} = req.params;
+      // await db.Notificacion.destroy({where:{IdNotificacion:idNoti}});
+      await db.NotiAgente.destroy(
+        {
+          where:{
+            IdNotificacion:idNoti,
+            IdEmpleado:idAgente
+          }
+        });
       res.status(200).send("Notificación eliminada correctamente");
 
     } catch (error: any) {
@@ -84,9 +90,8 @@ class ReporteController extends AbstractController {
 
   private async postCrearNotificacionAgente(req: Request, res: Response) {
     try {
-      const { FechaHora, Titulo, Descripcion, IdEmpleado} = req.body;
+      const { Titulo, Descripcion, IdEmpleado} = req.body;
       const notificacion = await db.Notificacion.create({
-        FechaHora,
         Titulo,
         Descripcion,
       });
@@ -96,7 +101,7 @@ class ReporteController extends AbstractController {
         IdEmpleado,
       });
 
-      // Envia notificacion a todos los empleados
+      // Envia notificacion al empleado
       const io = req.app.get("socketio"); // Web Socket
       if (io) {
         const notificacionEmpleado = await this.notificacionAgenteBandera(
