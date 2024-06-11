@@ -21,28 +21,93 @@ class LlamadaController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
     this.router.get("/consultarLlamadas", this.getConsultarLlamadas.bind(this));
     this.router.post("/crearLlamada", this.postCrearLlamada.bind(this));
-    this.router.delete("/eliminarLlamada/:id", this.deleteBorrarLlamada.bind(this));
     this.router.post("/crearIncidencia", this.postCrearIncidencia.bind(this));
     this.router.post("/crearEncuesta", this.postCrearEncuesta.bind(this));
     this.router.get("/infoTarjetas", this.getInfoTarjetas.bind(this));
     this.router.get("/infoTarjetasV2", this.getInfoTarjetasV2.bind(this));
-    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this)); //Socket
+    this.router.put("/actualizarLlamada", this.putActualizarLlamada.bind(this)); //Socket 
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
     this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
     this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));
     this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
-    this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones
-    this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones
-    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this)); //Socket
+    this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones 
+    this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones 
+    this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this)); //Socket 
     this.router.get("/llamadasArribaDelTiempo/:duracion", this.llamadasArribaDelTiempo.bind(this));
     this.router.get("/numPorAsunto", this.numPorAsunto.bind(this));
     this.router.get("/llamadasPorDia", this.getLlamadasPorDiaHistorico.bind(this));
     this.router.get("/llamadasPorHoras", this.porHoras.bind(this));
-    this.router.get("/top4Agentes", this.top4Agentes.bind(this));
+    this.router.get("/topAgents/:num", this.topAgentes.bind(this));
+    this.router.get("/obtenerSentimiento/:IdLlamada", this.obtenerSentimiento.bind(this));
+    this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
+    this.router.put("/cambiarSentiment", this.cambiarSentiment.bind(this));
   }
 
-  private async top4Agentes(req: Request, res: Response) {
+  private async obtenerSentimiento(req: Request, res: Response) {
     try {
+      const { IdLlamada } = req.params;
+      const sentimiento = await db.Llamada.findOne({
+        where: { IdLlamada },
+        attributes: ["Sentiment"]
+      });
+
+      if (!sentimiento) {
+        return res.status(404).send("No se encontró el sentimiento");
+      }
+
+      res.status(200).json(sentimiento);
+    } catch (err: any) {
+      console.log(err);
+      res.status(500).send('Internal server error' + err);
+    }
+  }
+
+  private async cambiarSentiment(req: Request, res: Response) {
+    try {
+      const {id} = req.body;
+      const {sentiment} = req.body;
+      const actLlamada = await db.Llamada.update(
+        {Sentiment: sentiment},
+        {where: {IdLlamada: id}}
+      );
+      
+      const io = req.app.get("socketio");
+      if (io) {
+        io.emit("sentiment", sentiment);
+        console.log("Evento emitido");
+      } else {
+        console.log("Socket.IO no está disponible");
+      }
+
+      res.status(200).send(actLlamada);
+      console.log("Sentiment actualizado");
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async emocionesPorDia(req: Request, res: Response) {
+    try {
+      const emociones = await db.sequelize.query(`
+      SELECT 
+        SUM(CASE WHEN Sentiment = 'positive' THEN 1 ELSE 0 END) as Positive,
+        SUM(CASE WHEN Sentiment = 'neutral' THEN 1 ELSE 0 END) as Neutral,
+        SUM(CASE WHEN Sentiment = 'negative' THEN 1 ELSE 0 END) as Negative
+      FROM Llamada
+      WHERE DATE(FechaHora) = CURDATE();
+      `,
+        { type: db.sequelize.QueryTypes.SELECT });
+      res.status(200).json(emociones);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async topAgentes(req: Request, res: Response) {
+    try {
+      const {num} = req.params;
       const agentes = await db.sequelize.query(
         `SELECT Nombre, ApellidoP, AVG(Calificacion) AS cali
         FROM Llamada
@@ -50,7 +115,7 @@ class LlamadaController extends AbstractController {
         JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
         GROUP BY Llamada.IdEmpleado
         ORDER BY Llamada.IdEmpleado DESC
-        LIMIT 4;`,
+        LIMIT ${num};`,
         { type: db.sequelize.QueryTypes.SELECT });
       res.status(200).json(agentes);
     } catch (err) {
@@ -70,8 +135,8 @@ class LlamadaController extends AbstractController {
         ORDER BY Hora ASC;`,
         { type: db.sequelize.QueryTypes.SELECT });
       const llamadasPorHora = [0, 0, 0, 0, 0, 0, 0, 0,
-                               0, 0, 0, 0, 0, 0, 0, 0,
-                               0, 0, 0, 0, 0, 0, 0, 0]; // Para cada día de la semana
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0]; // Para cada día de la semana
 
       llamadas.forEach((llamada: any) => {
         llamadasPorHora[parseInt(llamada.Hora) - 1] = llamada.NumeroDeLlamadas;
@@ -164,8 +229,6 @@ class LlamadaController extends AbstractController {
       } else {
         console.log("Socket.IO no está disponible");
       }
-
-
 
       res.status(200).send(actLlamada);
       console.log("Llamada actualizada");
@@ -273,26 +336,61 @@ class LlamadaController extends AbstractController {
     }
   }
 
-  private async getInfoTarjetasV2(req: Request, res: Response) {
+  private async getInfoTarjetasV3() {
     try {
       const llamadas = await db.sequelize.query(`
-      SELECT 
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
+      SELECT
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
           Zona.Nombre AS ZoneName, 
           Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
-          Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
           (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
       FROM Empleado
-      LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
-              SELECT MAX(L2.FechaHora) 
-              FROM Llamada AS L2 
-              WHERE L2.IdEmpleado = Empleado.IdEmpleado)
+      LEFT JOIN (
+          SELECT L1.*
+          FROM Llamada AS L1
+          JOIN (
+              SELECT IdEmpleado, MAX(FechaHora) AS MaxFechaHora
+              FROM Llamada
+              GROUP BY IdEmpleado
+          ) AS L2 ON L1.IdEmpleado = L2.IdEmpleado AND L1.FechaHora = L2.MaxFechaHora
+      ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
       LEFT JOIN Cliente ON L.Celular = Cliente.Celular
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
-      LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
-      LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
-      ORDER BY Empleado.IdEmpleado;
+      WHERE Empleado.Rol = 'agente'
+      ORDER BY Empleado.Nombre;
+    `, { type: db.sequelize.QueryTypes.SELECT });
+
+      return llamadas;
+    } catch (err) {
+      console.log(err);
+      throw new Error("Internal server error" + err);
+    }
+  }
+
+  private async getInfoTarjetasV2(req: Request, res: Response) {
+    try {
+      const llamadas = await db.sequelize.query(`
+      SELECT
+          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
+          Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
+          Zona.Nombre AS ZoneName, 
+          Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
+          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
+      FROM Empleado
+      LEFT JOIN (
+          SELECT L1.*
+          FROM Llamada AS L1
+          JOIN (
+              SELECT IdEmpleado, MAX(FechaHora) AS MaxFechaHora
+              FROM Llamada
+              GROUP BY IdEmpleado
+          ) AS L2 ON L1.IdEmpleado = L2.IdEmpleado AND L1.FechaHora = L2.MaxFechaHora
+      ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
+      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
+      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
+      WHERE Empleado.Rol = 'agente'
+      ORDER BY Empleado.Nombre;
       `, { type: db.sequelize.QueryTypes.SELECT });
 
       res.status(200).json(llamadas);
@@ -361,12 +459,12 @@ class LlamadaController extends AbstractController {
       );
 
       // Emitir evento de socket
-      const io = req.app.get("socketio");
-      if (io) {
+      const io = req.app.get("socketio"); // Web socket 
+      if (io) { // Si esta disponible
         const llamadas = await this.getInfoTarjetasV3();
         io.emit("newPage", llamadas);
         console.log("Evento emitido");
-      } else {
+      } else {  // Eror
         console.log("Socket.IO no está disponible");
       }
 
@@ -399,26 +497,26 @@ class LlamadaController extends AbstractController {
 
   private async getAverageCallDuration(req: Request, res: Response) {
     try {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
 
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
 
-        let averageDuration = await db["Llamada"].findAll({
-            attributes: [[db.Sequelize.fn('AVG', db.Sequelize.literal(`TIME_TO_SEC(Duracion)`)), 'averageDuration']],
-            where: {
-                FechaHora: {
-                    [db.Sequelize.Op.between]: [startOfDay, endOfDay]
-                }
-            }
-        });
-        res.status(200).json(averageDuration);
+      let averageDuration = await db["Llamada"].findAll({
+        attributes: [[db.Sequelize.fn('AVG', db.Sequelize.literal(`TIME_TO_SEC(Duracion)`)), 'averageDuration']],
+        where: {
+          FechaHora: {
+            [db.Sequelize.Op.between]: [startOfDay, endOfDay]
+          }
+        }
+      });
+      res.status(200).json(averageDuration);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Internal server error" + err);
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
     }
-}
+  }
 
 
   private async getNegativeCallsCount(req: Request, res: Response) {
@@ -439,7 +537,7 @@ class LlamadaController extends AbstractController {
         LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete 
         WHERE L.Sentiment = "NEGATIVE") AS subquery;
       `, { type: db.sequelize.QueryTypes.SELECT });
-      
+
       res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
@@ -456,59 +554,6 @@ class LlamadaController extends AbstractController {
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
-    }
-  }
-
-
-
-  // private async postCrearLlamada(req: Request, res: Response) {
-  //   try {
-  //     console.log(req.body);
-  //     const nuevaLlamada = await db.Llamada.create(req.body); // Insert
-  //     console.log("Llamada creada");
-
-  //     // Emitir evento de socket
-  //     const io = req.app.get("socketio");
-  //     if (io) {
-  //       io.emit("reloadPage");
-  //       console.log("Evento emitido");
-  //     } else {
-  //       console.log("Socket.IO no está disponible");
-  //     }
-
-  //     res.status(200).send("<h1>Llamada creada</h1>");
-  //   } catch (err) {
-  //     console.log(err);
-  //     res.status(500).send("Internal server error" + err);
-  //   }
-  // }
-
-  private async getInfoTarjetasV3() {
-    try {
-      const llamadas = await db.sequelize.query(`
-      SELECT 
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado,
-          Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
-          Zona.Nombre AS ZoneName, 
-          Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
-          Contrato.Fecha, Paquete.Nombre AS PName, Paquete.Precio,
-          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
-      FROM Empleado
-      LEFT JOIN Llamada AS L ON L.IdEmpleado = Empleado.IdEmpleado AND L.FechaHora = (
-              SELECT MAX(L2.FechaHora) 
-              FROM Llamada AS L2 
-              WHERE L2.IdEmpleado = Empleado.IdEmpleado)
-      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
-      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
-      LEFT JOIN Contrato ON Cliente.Celular = Contrato.Celular
-      LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete  
-      ORDER BY Empleado.IdEmpleado;
-    `, { type: db.sequelize.QueryTypes.SELECT });
-
-      return llamadas;
-    } catch (err) {
-      console.log(err);
-      throw new Error("Internal server error" + err);
     }
   }
 
@@ -529,17 +574,6 @@ class LlamadaController extends AbstractController {
       }
 
       res.status(200).send("<h1>Llamada creada</h1>");
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error" + err);
-    }
-  }
-
-  private async deleteBorrarLlamada(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      await db.Llamada.destroy({ where: { IdLlamada: id } });
-      res.status(200).send("<h1>Llamada eliminada</h1>");
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);

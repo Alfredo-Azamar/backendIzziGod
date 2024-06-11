@@ -15,15 +15,12 @@ class ClienteController extends AbstractController {
     }
     // Declarar todas las rutas del controlador
     protected initRoutes(): void {
-        this.router.get('/test',this.getTest.bind(this));
-        this.router.get('/consultarClientes',this.getConsultarClientes.bind(this));
-        this.router.post('/crearCliente',this.postCrearCliente.bind(this));
-        this.router.delete('/eliminarCliente/:id',this.deleteBorrarCliente.bind(this));
-        this.router.get('/consultarContrato',this.getConsultarContrato.bind(this));
-        this.router.post('/crearContrato',this.postCrearContrato.bind(this));
-        this.router.put('/actualizarContrato/:id', this.putActualizarContrato.bind(this));//* NO IMPLEMENTADO EN APPS
-        this.router.delete('/eliminarContrato/:id', this.deleteBorrarContrato.bind(this));
-        this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this)); //MAX
+        this.router.get('/test', this.getTest.bind(this));
+        this.router.get('/consultarClientes', this.getConsultarClientes.bind(this));
+        this.router.post('/crearCliente', this.postCrearCliente.bind(this));
+        this.router.get('/consultarContrato', this.getConsultarContrato.bind(this));
+        this.router.post('/crearContrato', this.postCrearContrato.bind(this));
+        this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this));
         this.router.get('/telefonoPorZona/:nombreZona', this.getTelefonoPorZona.bind(this));
         this.router.get('/paquetesPorCliente/:celular', this.getPaquetesPorCliente.bind(this)); 
     }
@@ -49,22 +46,44 @@ class ClienteController extends AbstractController {
 
     private async getConsultarCliente(req: Request, res: Response) { //MAX
         try {
-            const { celular } = req.params;
-            await db.Cliente.findOne({
+            const { celular } = req.params; 
+
+            const cliente = await db.Cliente.findOne({
                 where: { Celular: celular },
-                attributes: ['Celular', 'Nombre', 'ApellidoP', 'ApellidoM', 'IdZona']
-            })
-                .then((cliente: any) => {
-                    if (cliente) {
-                        res.status(200).json(cliente);
-                    } else {
-                        res.status(404).send("Cliente no encontrado");
-                    }
-                })
-                .catch((err: any) => {
-                    console.log(err);
-                    res.status(500).send('Internal server error' + err);
-                });
+                attributes: ['Celular', 'Nombre', 'ApellidoP', 'ApellidoM','Sexo','Correo', 'FechaNac', 'IdZona']
+            });
+
+            if (!cliente) {
+                res.status(404).send('Cliente not found');
+                return;
+            }
+            //Comment on tables visited
+            const zona = await db.Zona.findOne({
+                where: { IdZona: cliente.IdZona },
+                attributes: ['Nombre']
+            });
+
+            const contratos = await db.Contrato.findAll({
+                where: { Celular: celular } ,
+                attributes: ['IdPaquete']
+            });
+
+            const paquetes = await db.Paquete.findAll({
+                where: { IdPaquete: contratos.map((c:any) => c.IdPaquete) },
+                attributes: ['Nombre']
+            });
+
+            const paquetesInfo = paquetes.map((paquete: any) => ({
+                Nombre: paquete.Nombre,
+            }));
+
+            res.status(200).json({ 
+                ...cliente.toJSON(), 
+                Zona: zona.Nombre, 
+                Paquetes: paquetesInfo 
+            });
+
+
         } catch(error:any) {
             console.log(error);
             res.status(500).send('Internal server error'+error);
@@ -120,21 +139,10 @@ class ClienteController extends AbstractController {
     private async postCrearCliente(req: Request,res: Response){
         try{
             console.log(req.body);
-            await db.Cliente.create(req.body); //Insert
+            await db.Cliente.create(req.body);
             console.log("Cliente creado");
             res.status(200).send("<h1>Cliente creado</h1>");
         }catch(err){
-            console.log(err);
-            res.status(500).send('Internal server error'+err);
-        }
-    }
-
-    private async deleteBorrarCliente(req: Request,res: Response){
-        try{
-            const {id} = req.params;
-            await db.Cliente.destroy({where:{IdCliente:id}});
-            res.status(200).send("<h1>Cliente eliminado</h1>");
-        } catch(err) {
             console.log(err);
             res.status(500).send('Internal server error'+err);
         }
@@ -156,28 +164,6 @@ class ClienteController extends AbstractController {
             await db.Contrato.create(req.body); //Insert
             console.log("Contrato creado");
             res.status(200).send("<h1>Contrato creado</h1>");
-        }catch(err){
-            console.log(err);
-            res.status(500).send('Internal server error'+err);
-        }
-    }
-
-    private async putActualizarContrato(req: Request, res: Response) {
-        try{
-            const {id} = req.params;
-            await db.Contrato.update(req.body, {where:{IdContrato:id}});
-            res.status(200).send("<h1>Contrato actualizado</h1>");
-        } catch(err) {
-            console.log(err);
-            res.status(500).send('Internal server error'+err);
-        }
-    }
-
-    private async deleteBorrarContrato(req: Request, res: Response) {
-        try{
-            const {id} = req.params;
-            await db.Contrato.destroy({where:{IdContrato:id}});
-            res.status(200).send("<h1>Contrato eliminado</h1>");
         }catch(err){
             console.log(err);
             res.status(500).send('Internal server error'+err);

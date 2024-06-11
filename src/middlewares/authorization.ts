@@ -2,7 +2,7 @@ import { Response, Request, NextFunction } from "express";
 import { AWS_REGION, COGNITO_POOL_ID } from "../config";
 import jwt from "jsonwebtoken";
 import jwkToPem from "jwk-to-pem";
-import axios from "axios";
+
 
 const pems: { [key: string]: string } = {};
 class AuthMiddleware {
@@ -71,12 +71,12 @@ class AuthMiddleware {
   private async getAWSCognitoPems() {
     const URL = `https://cognito-idp.${this.poolRegion}.amazonaws.com/${this.userPoolId}/.well-known/jwks.json`;
     try {
-      const response = await axios.get(URL);
-      if (response.status !== 200) {
+      const response = await fetch(URL);
+      if (!response.ok) {
         throw "COGNITO PEMS ERROR";
       }
 
-      const data: any = await response.data;
+      const data: any = await response.json();
       // "kid": "1234example=",
       // "alg": "RS256",
       // "kty": "RSA",

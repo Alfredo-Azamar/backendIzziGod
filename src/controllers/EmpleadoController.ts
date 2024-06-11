@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
-import {Op} from "sequelize";
+import { Op } from "sequelize";
 
 class EmpleadoController extends AbstractController {
   //Singleton
@@ -14,30 +14,42 @@ class EmpleadoController extends AbstractController {
     }
     return this._instance;
   }
+
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get("/consultarEmpleados",this.getConsultarEmpleados.bind(this));
+    this.router.get("/consultarEmpleados", this.getConsultarEmpleados.bind(this));
     this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));
-    this.router.get("/calificacionPromedio/:id",this.getCalificacionPromedio.bind(this));
+    this.router.get("/calificacionPromedio/:id", this.getCalificacionPromedio.bind(this));
+
     // Api para mostrar el promedio de la calificacion de las llamadas de un empleado en un día
     // Ejemplo de petición:
     // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
-    this.router.get("/califPromDia/:id/calificaciones/:date",this.getCalifPromDia.bind(this));
-    this.router.get(
-      "/consultarLlamadasEmpleado/:id",
-      this.getSumLlamadasEmpleado.bind(this)
-    );
-    this.router.get(
-      "/consutarEmpleado/:id",
-      this.getConsultarEmpleado.bind(this)
-    );
-    // Api para mostrar el promedio de llamadas por agente
-    this.router.get(
-      "/consultarPromLlamadasEmpleado/:id",
-      this.getPromLlamadasEmpleado.bind(this)
-    );
-      this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
+    this.router.get("/califPromDia/:id/calificaciones/:date", this.getCalifPromDia.bind(this));//ERROR
+    this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this));
+    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
+    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));
+    this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
+    this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
+  }
+
+  private async EMERGENCIA(req: Request, res: Response) {
+    try {
+      const { id, nombre, apellido } = req.body;
+      
+      const io = req.app.get("socketio");
+
+      if (!io) {
+        return res.status(500).send("Socket.io is not initialized");
+      } else {
+        io.emit("EMERGENCIA", { id, nombre, apellido });
+        console.log("EMERGENCIA", { id, nombre, apellido });
+      }
+      res.status(200).send("EMERGENCIA enviada");
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
   }
 
   private async agentesActivos(req: Request, res: Response) {
@@ -59,7 +71,7 @@ class EmpleadoController extends AbstractController {
 
       `, { type: db.sequelize.QueryTypes.SELECT });
 
-      res.status(200).json(llamadas);
+      return res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
@@ -87,6 +99,7 @@ class EmpleadoController extends AbstractController {
 
   private async getCalificacionPromedio(req: Request, res: Response) {
     try {
+      //Comment
       const { id } = req.params;
 
       const empleado = await db.Empleado.findOne({
