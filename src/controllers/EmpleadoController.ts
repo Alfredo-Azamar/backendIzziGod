@@ -170,7 +170,7 @@ class EmpleadoController extends AbstractController {
         where: {
           IdEmpleado: id,
           Fecha: {
-            [db.Op.between]: [startDate, endDate],
+            [ Op.between]: [startDate, endDate],
           },
         },
         include: {
