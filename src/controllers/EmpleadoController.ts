@@ -17,26 +17,13 @@ class EmpleadoController extends AbstractController {
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get(
-      "/consultarEmpleados",
-      this.getConsultarEmpleados.bind(this)
-    );
+    this.router.get("/consultarEmpleados",this.getConsultarEmpleados.bind(this));
     this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));
-    this.router.delete(
-      "/eliminarEmpleado/:id",
-      this.deleteBorrarEmpleado.bind(this)
-    );
-    this.router.get(
-      "/calificacionPromedio/:id",
-      this.getCalificacionPromedio.bind(this)
-    );
+    this.router.get("/calificacionPromedio/:id",this.getCalificacionPromedio.bind(this));
     // Api para mostrar el promedio de la calificacion de las llamadas de un empleado en un día
     // Ejemplo de petición:
     // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
-    this.router.get(
-      "/califPromDia/:id/calificaciones/:date",
-      this.getCalifPromDia.bind(this)
-    );
+    this.router.get("/califPromDia/:id/calificaciones/:date",this.getCalifPromDia.bind(this));
     this.router.get(
       "/consultarLlamadasEmpleado/:id",
       this.getSumLlamadasEmpleado.bind(this)
@@ -291,17 +278,6 @@ class EmpleadoController extends AbstractController {
       await db.Empleado.create(req.body); //Insert
       console.log("Empleado creado");
       res.status(200).send("<h1>Empleado creado</h1>");
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error" + err);
-    }
-  }
-
-  private async deleteBorrarEmpleado(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      await db.Empleado.destroy({ where: { IdEmpleado: id } });
-      res.status(200).send("<h1>Empleado eliminado</h1>");
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
