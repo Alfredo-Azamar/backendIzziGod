@@ -19,7 +19,6 @@ class ReporteController extends AbstractController {
         this.router.get('/test', this.getTest.bind(this));
         this.router.get('/consultarReportes', this.getConsultarReportes.bind(this));
         this.router.post('/crearReporte', this.postCrearReporte.bind(this)); //Socket
-        this.router.delete('/eliminarReporte/:id', this.deleteBorrarReporte.bind(this));
         this.router.get('/reportesCliente/:id', this.getReportesCliente.bind(this));
     }
 

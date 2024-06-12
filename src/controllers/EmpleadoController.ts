@@ -18,21 +18,19 @@ class EmpleadoController extends AbstractController {
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get("/consultarEmpleados", this.authMiddleware.verifyToken, this.getConsultarEmpleados.bind(this));
-    this.router.post("/crearEmpleado", this.authMiddleware.verifyToken, this.postCrearEmpleado.bind(this));
-    this.router.delete("/eliminarEmpleado/:id", this.authMiddleware.verifyToken, this.deleteBorrarEmpleado.bind(this));
-    this.router.get("/calificacionPromedio/:id", this.authMiddleware.verifyToken, this.getCalificacionPromedio.bind(this));
+    this.router.get("/consultarEmpleados", this.getConsultarEmpleados.bind(this));
+    this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));
+    this.router.get("/calificacionPromedio/:id", this.getCalificacionPromedio.bind(this));
 
     // Api para mostrar el promedio de la calificacion de las llamadas de un empleado en un día
     // Ejemplo de petición:
     // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
     this.router.get("/califPromDia/:id/calificaciones/:date", this.getCalifPromDia.bind(this));//ERROR
-    this.router.get("/consultarLlamadasEmpleado/:id", this.authMiddleware.verifyToken, this.getSumLlamadasEmpleado.bind(this));
-    this.router.get("/consutarEmpleado/:id", this.authMiddleware.verifyToken, this.getConsultarEmpleado.bind(this));
-    // Api para mostrar el promedio de llamadas por agente
-    this.router.get("/consultarPromLlamadasEmpleado/:id", this.authMiddleware.verifyToken, this.getPromLlamadasEmpleado.bind(this));
-    this.router.get("/agentesActivos", this.authMiddleware.verifyToken, this.agentesActivos.bind(this)); //Notificaciones
-    this.router.post("/EMERGENCIA", this.authMiddleware.verifyToken, this.EMERGENCIA.bind(this));
+    this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this));
+    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
+    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));
+    this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
+    this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
   }
 
   private async EMERGENCIA(req: Request, res: Response) {
@@ -101,6 +99,7 @@ class EmpleadoController extends AbstractController {
 
   private async getCalificacionPromedio(req: Request, res: Response) {
     try {
+      //Comment
       const { id } = req.params;
 
       const empleado = await db.Empleado.findOne({
@@ -289,17 +288,6 @@ class EmpleadoController extends AbstractController {
       await db.Empleado.create(req.body); //Insert
       console.log("Empleado creado");
       res.status(200).send("<h1>Empleado creado</h1>");
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error" + err);
-    }
-  }
-
-  private async deleteBorrarEmpleado(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      await db.Empleado.destroy({ where: { IdEmpleado: id } });
-      res.status(200).send("<h1>Empleado eliminado</h1>");
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);

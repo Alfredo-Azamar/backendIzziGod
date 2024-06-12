@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
 import { Op, where } from "sequelize";
+import moment from 'moment-timezone';
 
 class ReporteController extends AbstractController {
   //Singleton
@@ -88,16 +89,20 @@ class ReporteController extends AbstractController {
     }
   }
 
+
   private async postCrearNotificacionAgente(req: Request, res: Response) {
     try {
-      const { Titulo, Descripcion, IdEmpleado} = req.body;
-      const notificacion = await db.Notificacion.create({
-        Titulo,
-        Descripcion,
-      });
+      const {Titulo, Descripcion, IdEmpleado} = req.body;
+      const FechaHora = moment().tz("America/Mexico_City").format();
+      const subFechaHora = FechaHora.substring(0, 19);
       
+      const notificacion = await db.sequelize.query(`
+        INSERT INTO Notificacion(FechaHora, Titulo, Descripcion)
+        VALUES('${subFechaHora}', '${Titulo}', '${Descripcion}');
+        `);
+    
       await db.NotiAgente.create({
-        IdNotificacion: notificacion.IdNotificacion,
+        IdNotificacion: notificacion[0],
         IdEmpleado,
       });
 
@@ -147,13 +152,22 @@ class ReporteController extends AbstractController {
   private async postCrearNotificacion(req: Request, res: Response) {
     try {
       // Creates new notification
-      const {FechaHora, Titulo, Descripcion} = req.body;
+      const {Titulo, Descripcion} = req.body;
+      const FechaHora = moment().tz("America/Mexico_City").format();
+      const subFechaHora = FechaHora.substring(0, 19); 
 
-      const newNoti = await db.Notificacion.create({
-        FechaHora,
-        Titulo,
-        Descripcion
-      });
+      console.log(subFechaHora);
+
+      const newNoti = await db.sequelize.query(`
+        INSERT INTO Notificacion(FechaHora, Titulo, Descripcion)
+        VALUES('${subFechaHora}', '${Titulo}', '${Descripcion}');
+        `);
+      
+      // const newNoti = await db.Notificacion.create({
+      //   subFechaHora,
+      //   Titulo,
+      //   Descripcion
+      // });
 
       const agentesId = await db.Empleado.findAll({
         where: {Rol: "agente"},
@@ -161,7 +175,7 @@ class ReporteController extends AbstractController {
       });
 
       const notiAgentes = agentesId.map((agente: any) => ({
-        IdNotificacion: newNoti.IdNotificacion,
+        IdNotificacion: newNoti[0],
         IdEmpleado: agente.IdEmpleado
       }));
 

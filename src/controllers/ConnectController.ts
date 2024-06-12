@@ -24,7 +24,7 @@ class ConnectController extends AbstractController {
 
     // Inicializar las rutas
     protected initRoutes(): void {
-        this.router.get('/sentiment/:idLlamada', this.authMiddleware.verifyToken, this.sendSentiment.bind(this));
+        this.router.get('/sentiment/:idLlamada', this.sendSentiment.bind(this));
     }
 
     private async sendSentiment(req: Request, res: Response) {
