@@ -153,7 +153,11 @@ class EmpleadoController extends AbstractController {
   private async getCalifPromDia(req: Request, res: Response) {
     try {
       const { id, date } = req.params;
-
+      // Validar la entrada
+      if (!id || !date) {
+        return res.status(400).send("Id del empleado y fecha son requeridos");
+      }
+      // Verificar si el empleado existe
       const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
       });
@@ -162,9 +166,12 @@ class EmpleadoController extends AbstractController {
         return res.status(404).send("El empleado no existe");
       }
   
-      // Conversión de la fecha a un formato general
+      // Conversión de la fecha a un formato general y validación
       const startDate = new Date(date);
-      const endDate = new Date(date);
+      if (isNaN(startDate.getTime())){
+        return res.status(400).send("Formato de fecha inválido");
+      }
+      const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 1);
 
       // Obtener las llamadas y las califs en una fecha específica
@@ -183,19 +190,16 @@ class EmpleadoController extends AbstractController {
       });
 
       if (llamadasCalif.length === 0) {
-        return res
-          .status(404)
-          .send(
-            "No se encontraron llamadas para este empleado en la fecha indicada"
+        return res.status(404).send("No se encontraron llamadas para este empleado en la fecha indicada"
           );
       }
 
-      // calcular el promedio de calificaciones
+      // Calcular el promedio de calificaciones
       let sumCalifs = 0;
       let totalCalifs = 0;
 
       for (const llamada of llamadasCalif) {
-        if (llamada.Encuesta) { // Check if Encuesta exists for the llamada
+        if (llamada.Encuesta && llamada.Encuesta.Calificacion !== null) {
           sumCalifs += llamada.Encuesta.Calificacion;
           totalCalifs++;
         }
