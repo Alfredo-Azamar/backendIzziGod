@@ -64,40 +64,39 @@ INSERT INTO Incidencia (Nombre) VALUES
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Empleado ~~~~~~~~~~~~~~~~~~~~~~~
 
-INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo, Contra) VALUES 
-('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'karicm@gmail.com', '1234Password'), 
-('2', 'supervisor', 'Freddy', 'Azamar', 'López', 'A01798100@tec.mx', 'zzzZZZzzz'),
+INSERT INTO Empleado (IdEmpleado, Rol, Nombre, ApellidoP, ApellidoM, Correo) VALUES 
+('1', 'supervisor', 'Karla', 'Cruz', 'Muñiz', 'karicm@gmail.com'), 
+('2', 'supervisor', 'Freddy', 'Azamar', 'López', 'A01798100@tec.mx'),
 
-('joahan11', 'agente', 'Javier', 'García', 'Fernández', 'A01748222@tec.mx', 'Password1234'),
-('luisaM2', 'agente', 'Luisa', 'González', 'Martínez', 'LuisaGZ@gmail.com', 'SecurePass5678'),
-('paquitoS', 'agente', 'Paco', 'Ávila', 'Bautista', 'PaKoAvil@gmail.com', '12345678'),
-('ferGuerra', 'agente', 'Fernanda', 'Carrión', 'Guerra', 'carrioFer@gmail.com', 'qwert'),
-
-('andyMD', 'agente', 'Andrea', 'Domínguez', 'Mejía', 'andyDom@gmail.com', 'poiuy'),
-('torres12', 'agente', 'Julio', 'Torres', 'Vázquez', 'torres10@gmail.com', 'torres11'),
-('nataliu', 'agente', 'Natalia', 'Morales', 'Uscanga', 'natmora@gmail.com', 'mnbvcxz'),
-('delgadoC', 'agente', 'Jesús', 'Delgado', 'Chávez', 'jisusD@gmail.com', 'asdfghj'),
-('josae', 'agente', 'Andrés', 'Aguilar', 'Cabrera', 'andCabre@gmai.com', 'alpoiu');
+('joahan11', 'agente', 'Javier', 'García', 'Fernández', 'A01748222@tec.mx'),
+('luisaM2', 'agente', 'Luisa', 'González', 'Martínez', 'LuisaGZ@gmail.com'),
+('paquitoS', 'agente', 'Paco', 'Ávila', 'Bautista', 'PaKoAvil@gmail.com'),
+('ferGuerra', 'agente', 'Fernanda', 'Carrión', 'Guerra', 'carrioFer@gmail.com'),
+('andyMD', 'agente', 'Andrea', 'Domínguez', 'Mejía', 'andyDom@gmail.com'),
+('torres12', 'agente', 'Julio', 'Torres', 'Vázquez', 'torres10@gmail.com'),
+('nataliu', 'agente', 'Natalia', 'Morales', 'Uscanga', 'natmora@gmail.com'),
+('delgadoC', 'agente', 'Jesús', 'Delgado', 'Chávez', 'jisusD@gmail.com'),
+('josae', 'agente', 'Andrés', 'Aguilar', 'Cabrera', 'andCabre@gmai.com');
 
 
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Cliente ~~~~~~~~~~~~~~~~~~~~~~~
 
--- ('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "masculino", "rarauwAzul@gmail.com", 5);
+-- ('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "male", "rarauwAzul@gmail.com", 5);
 
 INSERT INTO Cliente (Celular, Nombre, ApellidoP, ApellidoM, FechaNac, Sexo, Correo, IdZona) VALUES 
-('+525540066976', 'Alfredo', 'Azamar', 'López', '2000-07-23', "masculino", "fred.mar@gmail.com", 5),
-('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "masculino", "rarauwAzul@gmail.com", 5),
-('+525513604788', 'Lore', 'Delgado', 'Mendoza', '1990-02-16', "femenino", "lors.del@outlook.com", 5),
-('+525516399531', 'Héctor', 'González', 'Sánchez', '1890-10-29', "masculino", "hgs.rt@yahoo.com", 5),
-('+525586117753', 'José Antonio', 'Moreno', 'Tahuilan', '1918-05-23', "masculino", "pepo_PM@gmail.com", 5),
-('+525521127409', 'Maximiliano', 'Lecona', 'Nieves', '2001-06-23', "masculino", "maxito.nieve@icloud.com", 6),
+('+525540066976', 'Alfredo', 'Azamar', 'López', '2000-07-23', "male", "fred.mar@gmail.com", 5),
+('+525584016051', 'Joahancin', 'García', 'Fernández', '2000-07-23', "male", "rarauwAzul@gmail.com", 5),
+('+525513604788', 'Lore', 'Delgado', 'Mendoza', '1990-02-16', "female", "lors.del@outlook.com", 5),
+('+525516399531', 'Héctor', 'González', 'Sánchez', '1890-10-29', "male", "hgs.rt@yahoo.com", 5),
+('+525586117753', 'José Antonio', 'Moreno', 'Tahuilan', '1918-05-23', "male", "pepo_PM@gmail.com", 5),
+('+525521127409', 'Maximiliano', 'Lecona', 'Nieves', '2001-06-23', "male", "maxito.nieve@icloud.com", 6),
 
-('+525574855162', 'Eric', 'Navarro', 'Martínez', '2002-11-05', "masculino", "manuEricsin@outlook.com", 21),
-('+525517292933', 'Benjamín', 'Cruz', 'Cervantes', '2003-07-12', "masculino", "benjiewcwx@outlook.com", 8),
-('+522282127852', 'Bernardo', 'Limón', 'Montes de Oca', '2002-04-14', "masculino", "limonsin@yahoo.com", 8),
-('+525521044587', 'Ángel', 'Márquez', 'Curiel', '2000-10-03', "masculino", "angeliu@gmail.com", 8);
+('+525574855162', 'Eric', 'Navarro', 'Martínez', '2002-11-05', "male", "manuEricsin@outlook.com", 21),
+('+525517292933', 'Benjamín', 'Cruz', 'Cervantes', '2003-07-12', "male", "benjiewcwx@outlook.com", 8),
+('+522282127852', 'Bernardo', 'Limón', 'Montes de Oca', '2002-04-14', "male", "limonsin@yahoo.com", 8),
+('+525521044587', 'Ángel', 'Márquez', 'Curiel', '2000-10-03', "male", "angeliu@gmail.com", 8);
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Contrato ~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,34 +132,46 @@ INSERT INTO Reporte (FechaHora, Prioridad, Descripcion, IdZona, Celular, IdEmple
 INSERT INTO SolucionBase (Nombre, Asunto) VALUES 
 ('Requiere técnico', 'soporte'),
 ('Se presentó incidencia', 'soporte'),
-('Reiniciar el modém', 'internet'),
-('Checar las conexiones del módem', 'internet'),
-('Checar indicaciones led del módem', 'internet'),
+('Check modem connections')
+('Reboot the modem', 'internet'),
+('Check modem LED indications', 'internet'),
+('Move the modem to another location', 'internet'),
+('Use the Ethernet cable to test the connection', 'internet'),
 ('Reiniciar el teléfono', 'telefonia'),
 ('Verificar señal', 'telefonia'),
 ('Checar Conexiones decodificador', 'television'),
 ('Checar señal decodificador', 'television');
 
 INSERT INTO Pasos (Descripcion, IdSolucion) VALUES 
-('Ubicar el módem', 3),
-('Buscar el orificio de reset', 3),
-('Apretarlo durante 5 segundos', 3),
-('Revisar que el cable de corriente esté conectado', 4),
-('Revisar que el cable de internet esté conectado', 4),
-('Revisar que el cable de ethernet esté conectado', 4),
-('Revisar que el led de power esté encendido', 5),
-('Revisar que el led de internet esté encendido', 5),
-('Revisar que el led de ethernet esté encendido', 5),
-('Revisar que el led de wifi esté encendido', 5),
-('Apaga el teléfono', 6),
-('Espera al menos 30 segundos', 6),
-('Enciende el teléfono', 6),
-('Asegúrate de que tienes buena señal', 7),
-('Si la señal es débil, intenta moverte a un lugar con mejor señal', 7),
-('Asegúrate de que todos los cables estén bien conectados', 8),
-('Si hay algún cable suelto, reconéctalo', 8),
-('Asegúrate de que la caja de cable tiene buena señal', 9),
-('Si la señal es débil, intenta mover la caja de cable a un lugar con mejor señal', 9);
+('Locate modem', 3),
+('Check if modem is connected', 3),
+('Inspect LED lights from modem', 3),
+('Unplugg, wait 30 sec, plug back in', 3),
+('Locate the modem', 4),
+('Find small slot labeled reset', 4),
+('Press and hold the reset button', 4),
+('Check that the power LED is on', 5),
+('Check that the internet LED is on', 5),
+('Check that the Ethernet LED is on', 5),
+('Check that the Wi-Fi LED is on', 5),
+('Check if the modem at the current location is not having the necessary signal', 6),
+('Disconnect the modem cable from the light', 6),
+('Move it to a more open and central space', 6),
+('Connect the modem again', 6),
+('Locate the Ethernet cable included in your package', 7),
+('Find the Ethernet input on the modem', 7),
+('Connect the cable to the modem input', 7),
+('Connect the other end to the computer', 7),
+('Check connection', 7),
+('Apaga el teléfono', 8),
+('Espera al menos 30 segundos', 8),
+('Enciende el teléfono', 8),
+('Asegúrate de que tienes buena señal', 9),
+('Si la señal es débil, intenta moverte a un lugar con mejor señal', 9),
+('Asegúrate de que todos los cables estén bien conectados', 10),
+('Si hay algún cable suelto, reconéctalo', 10),
+('Asegúrate de que la caja de cable tiene buena señal', 11),
+('Si la señal es débil, intenta mover la caja de cable a un lugar con mejor señal', 11);
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
