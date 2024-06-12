@@ -132,7 +132,7 @@ INSERT INTO Reporte (FechaHora, Prioridad, Descripcion, IdZona, Celular, IdEmple
 INSERT INTO SolucionBase (Nombre, Asunto) VALUES 
 ('Requiere técnico', 'soporte'),
 ('Se presentó incidencia', 'soporte'),
-('Check modem connections')
+('Check modem connections', 'internet'),
 ('Reboot the modem', 'internet'),
 ('Check modem LED indications', 'internet'),
 ('Move the modem to another location', 'internet'),
