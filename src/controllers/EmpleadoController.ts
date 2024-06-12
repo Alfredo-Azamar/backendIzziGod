@@ -174,6 +174,8 @@ class EmpleadoController extends AbstractController {
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 1);
 
+      console.log("S:", startDate, "E:", endDate);
+
       // Obtener las llamadas y las califs en una fecha específica
       const llamadasCalif = await db.Llamada.findAll({
         where: {
