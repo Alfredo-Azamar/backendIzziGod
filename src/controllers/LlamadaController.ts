@@ -41,6 +41,7 @@ class LlamadaController extends AbstractController {
     this.router.get("/obtenerSentimiento/:IdLlamada", this.obtenerSentimiento.bind(this));
     this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
     this.router.put("/cambiarSentiment", this.cambiarSentiment.bind(this));
+    this.router.get("/topPeoresAgentes/:num", this.TopPeoresAgentes.bind(this));
   }
 
   private async obtenerSentimiento(req: Request, res: Response) {
@@ -115,6 +116,25 @@ class LlamadaController extends AbstractController {
         JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
         GROUP BY Llamada.IdEmpleado
         ORDER BY Llamada.IdEmpleado DESC
+        LIMIT ${num};`,
+        { type: db.sequelize.QueryTypes.SELECT });
+      res.status(200).json(agentes);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async TopPeoresAgentes(req: Request, res: Response) {
+    try {
+      const {num} = req.params;
+      const agentes = await db.sequelize.query(
+        `SELECT Nombre, ApellidoP, AVG(Calificacion) AS cali
+        FROM Llamada
+        JOIN Encuesta ON Llamada.IdLlamada = Encuesta.IdLlamada
+        JOIN Empleado ON Llamada.IdEmpleado = Empleado.IdEmpleado
+        GROUP BY Llamada.IdEmpleado
+        ORDER BY Llamada.IdEmpleado ASC
         LIMIT ${num};`,
         { type: db.sequelize.QueryTypes.SELECT });
       res.status(200).json(agentes);
