@@ -42,6 +42,24 @@ class LlamadaController extends AbstractController {
     this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
     this.router.put("/cambiarSentiment", this.cambiarSentiment.bind(this));
     this.router.get("/topPeoresAgentes/:num", this.TopPeoresAgentes.bind(this));
+    this.router.put("/solucionLlamada", this.solucionLlamada.bind(this));
+  }
+
+  private async solucionLlamada(req: Request, res: Response) {
+    try {
+      const {IdLlamada, IdSolucion} = req.body;
+
+      const llamdaAct = await db.Llamada.update(
+        {IdSolucion: IdSolucion},
+        {where: {IdLlamada: IdLlamada}}
+      )
+
+      res.status(200).send("Llamada actualizada con solución");
+
+    } catch (err: any) {
+      console.log(err);
+      res.status(500).send('Internal server error' + err);
+    }
   }
 
   private async obtenerSentimiento(req: Request, res: Response) {
