@@ -177,14 +177,14 @@ INSERT INTO Pasos (Descripcion, IdSolucion) VALUES
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Llamada ~~~~~~~~~~~~~~~~~~~~~~~
 
 INSERT INTO Llamada (IdLlamada, FechaHora, Notas, Estado, Sentiment, Asunto, IdEmpleado, Celular) VALUES
-('7811ce99-6f6c-45d8-9e20-071aada01b2c', '2024-06-05 7:45:37', 'no me sirve el internet', 1, 'neutral', 'internet', 'andyMD', '+525586117753'),
-('44feff5b-2481-4c00-8582-717f8172fbd0', '2024-06-05 8:55:37', 'no me sirve el módem', 1, 'positive', 'internet', 'delgadoC', '+522282127852'),
-('f9c11baf-c125-4271-ab5b-382a1425ac81', '2024-06-05 9:56:39', 'el control remoto no sirve', 1, 'negative', 'television', 'ferGuerra', '+525513604788'),
-('971231b1-1580-4f58-90b2-5dc9710ee61f', '2024-06-05 10:58:39', 'no tengo señal', 1, 'negative', 'television', 'luisaM2', '+525516399531'),
-('eb32ade4-2d6a-4048-9d6b-e03597f79513', '2024-06-05 11:59:32', 'no puedo recibir llamadas', 1, 'positive', 'telefonia', 'nataliu', '+525517292933'),
-('6198a1bf-bc4a-4579-80c0-8bed63ec1591', '2024-06-05 6:05:52', 'no puedo realizar llamadas', 1, 'neutral', 'telefonia', 'paquitoS', '+525521044587'),
-('c9e70e8d-441f-4b80-9efa-9f7f907da0a0', '2024-06-05 12:06:22', 'No sirve el internet', 1, 'positive', 'internet', 'torres12', '+525521127409'),
-('3bea873c-ca96-4007-a533-40af9ea1f3ab', '2024-06-05 12:07:12', 'mi conexión esta lenta', 1, 'negative', 'internet', 'josae', '+525574855162');
+('4c1d6f89-9cc4-4451-a29c-cbe3d38cfa38', '2024-06-12 7:45:37', 'no me sirve el internet', 1, 'neutral', 'internet', 'andyMD', '+525586117753'),
+('2e034c9c-83ba-4d36-aafa-d1afe5018bb1', '2024-06-12 8:55:37', 'no me sirve el módem', 1, 'positive', 'internet', 'delgadoC', '+522282127852'),
+('42016a89-a00b-428d-bc12-5ea3bb89d7fe', '2024-06-12 9:56:39', 'el control remoto no sirve', 1, 'positive', 'television', 'ferGuerra', '+525513604788'),
+('64fb44e6-cedf-41c7-a2eb-4be822b30e2c', '2024-06-12 10:58:39', 'no tengo señal', 1, 'negative', 'television', 'luisaM2', '+525516399531'),
+('03a3ce22-3a4d-4faf-9afe-e79f6a27d574', '2024-06-12 11:59:32', 'no puedo recibir llamadas', 1, 'positive', 'telefonia', 'nataliu', '+525517292933'),
+('6b5ca90d-a27c-4238-b610-b47fd7de801d', '2024-06-12 6:05:52', 'no puedo realizar llamadas', 1, 'neutral', 'telefonia', 'paquitoS', '+525521044587'),
+('b7cff977-067e-4a04-beec-85c7f490715e', '2024-06-12 12:06:22', 'No sirve el internet', 1, 'positive', 'internet', 'torres12', '+525521127409'),
+('e5f63cdb-9f6d-44a4-ba80-ae24bf4b562c', '2024-06-12 12:07:12', 'mi conexión esta lenta', 1, 'negative', 'internet', 'josae', '+525574855162');
 
 
 -- ~~~~~~~~~~~~~~~~~~~~~~~ Encuesta ~~~~~~~~~~~~~~~~~~~~~~~
