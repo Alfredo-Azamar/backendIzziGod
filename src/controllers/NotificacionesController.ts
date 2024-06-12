@@ -52,7 +52,9 @@ class ReporteController extends AbstractController {
 
   private async getNotisAgentes(req: Request, res: Response) {
     try{
-      const notiAgentec= await db.NotiAgente.findAll();
+      const notiAgentec= await db.NotiAgente.findAll({
+        where: {IdEmpleado: "joahan11"},
+      });
       res.status(200).json(notiAgentec);
     } catch (error: any) {
       console.log(error);
@@ -112,8 +114,9 @@ class ReporteController extends AbstractController {
         const notificacionEmpleado = await this.notificacionAgenteBandera(
           IdEmpleado
         );
-        io.emit("notificacion_Empleado", notificacionEmpleado);
+        io.emit(`notificacion_empleado_${IdEmpleado}`, notificacionEmpleado);
         console.log("Notificación enviada a empleado: " + IdEmpleado);
+        console.log(notificacionEmpleado);
       } else {
         console.log("No se pudo enviar la notificación global");
       }
@@ -184,14 +187,16 @@ class ReporteController extends AbstractController {
       // Envia notificacion a todos los empleados
       const io = req.app.get("socketio"); // Web Socket
       if (io) {
-        let count = 0;
+        // let count = 0;
+        // Send to every agent
         for (const agente of agentesId) {
           const notificacionEmpleado = await this.notificacionAgenteBandera(agente.IdEmpleado);
           console.log("Notificación enviada a empleado: " + agente.IdEmpleado);
-          io.emit("notificacion_empleado", notificacionEmpleado);
-          count++;
+          // console.log(notificacionEmpleado);
+          io.emit(`notificacion_empleado_${agente.IdEmpleado}` , notificacionEmpleado);
+          // count++;
         }
-        console.log("Notificación empleado enviada" + count + " veces");
+        console.log("Notificación empleado enviada a todos los agentes");
       } else { 
         console.log("No se pudo enviar la notificación global");
       }
