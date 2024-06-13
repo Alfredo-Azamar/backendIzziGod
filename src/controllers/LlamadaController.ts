@@ -43,15 +43,17 @@ class LlamadaController extends AbstractController {
     this.router.put("/cambiarSentiment", this.cambiarSentiment.bind(this));
     this.router.get("/topPeoresAgentes/:num", this.TopPeoresAgentes.bind(this));
     this.router.put("/solucionLlamada", this.solucionLlamada.bind(this));
+    this.router.get("/emocionesPorDiaAgente/:id", this.emocionesPorDiaAgente.bind(this));
+    this.router.get("/averageCallTime/:id", this.averageCallTime.bind(this));
   }
 
   private async solucionLlamada(req: Request, res: Response) {
     try {
-      const {IdLlamada, IdSolucion} = req.body;
+      const { IdLlamada, IdSolucion } = req.body;
 
       const llamdaAct = await db.Llamada.update(
-        {IdSolucion: IdSolucion},
-        {where: {IdLlamada: IdLlamada}}
+        { IdSolucion: IdSolucion },
+        { where: { IdLlamada: IdLlamada } }
       )
 
       res.status(200).send("Llamada actualizada con solución");
@@ -83,13 +85,13 @@ class LlamadaController extends AbstractController {
 
   private async cambiarSentiment(req: Request, res: Response) {
     try {
-      const {id} = req.body;
-      const {sentiment} = req.body;
+      const { id } = req.body;
+      const { sentiment } = req.body;
       const actLlamada = await db.Llamada.update(
-        {Sentiment: sentiment},
-        {where: {IdLlamada: id}}
+        { Sentiment: sentiment },
+        { where: { IdLlamada: id } }
       );
-      
+
       const io = req.app.get("socketio");
       if (io) {
         io.emit("sentiment", sentiment);
@@ -124,9 +126,49 @@ class LlamadaController extends AbstractController {
     }
   }
 
+  private async emocionesPorDiaAgente(req: Request, res: Response) {
+    try {
+      const idAgente = req.params.id;
+      const emociones = await db.sequelize.query(`
+      SELECT 
+        SUM(CASE WHEN Sentiment = 'positive' THEN 1 ELSE 0 END) as Positive,
+        SUM(CASE WHEN Sentiment = 'neutral' THEN 1 ELSE 0 END) as Neutral,
+        SUM(CASE WHEN Sentiment = 'negative' THEN 1 ELSE 0 END) as Negative
+      FROM Llamada
+      WHERE IdEmpleado = :idAgente;
+      `,
+        {
+          type: db.sequelize.QueryTypes.SELECT,
+          replacements: { idAgente: idAgente }
+        });
+      res.status(200).json(emociones);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
+  private async averageCallTime(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const result = await db.sequelize.query(
+        `SELECT AVG(Duracion) AS avgTime
+      FROM Llamada
+      WHERE IdEmpleado = :id;`,
+        {
+          type: db.sequelize.QueryTypes.SELECT,
+          replacements: { id: id }
+        });
+      res.status(200).json(result);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
+    }
+  }
+
   private async topAgentes(req: Request, res: Response) {
     try {
-      const {num} = req.params;
+      const { num } = req.params;
       const agentes = await db.sequelize.query(
         `SELECT Nombre, ApellidoP, AVG(Calificacion) AS cali
         FROM Llamada
@@ -143,9 +185,10 @@ class LlamadaController extends AbstractController {
     }
   }
 
+
   private async TopPeoresAgentes(req: Request, res: Response) {
     try {
-      const {num} = req.params;
+      const { num } = req.params;
       const agentes = await db.sequelize.query(
         `SELECT Nombre, ApellidoP, AVG(Calificacion) AS cali
         FROM Llamada
