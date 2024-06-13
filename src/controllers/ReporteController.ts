@@ -20,6 +20,34 @@ class ReporteController extends AbstractController {
         this.router.get('/consultarReportes', this.getConsultarReportes.bind(this));
         this.router.post('/crearReporte', this.postCrearReporte.bind(this)); //Socket
         this.router.get('/reportesCliente/:id', this.getReportesCliente.bind(this));
+        this.router.post("/crearReportePersonal", this.postCrearReportePersonal.bind(this));
+        this.router.get("/consultarReportesPersonal/:celular", this.getConsultarReportesPersonal.bind(this));
+    }
+
+    private async getConsultarReportesPersonal(req: Request, res: Response) {
+        try {
+            const { celular } = req.params;
+            let reportes = await db.ReportePersonal.findAll({
+                where: { Celular: celular }
+            });
+            res.status(200).json(reportes);
+        } catch (err) {
+            console.log(err)
+            res.status(500).send('Internal server error' + err);
+        }
+    }
+
+    private async postCrearReportePersonal(req: Request, res: Response) {
+        try {
+            console.log(req.body);
+            const nuevoReporte = await db.ReportePersonal.create(req.body); //Insert
+            console.log("Reporte creado");
+
+            res.status(200).send("<h1>Reporte creado</h1>");
+        } catch (err) {
+            console.log(err);
+            res.status(500).send('Internal server error' + err);
+        }
     }
 
     private async getReportesCliente(req: Request, res: Response) {
