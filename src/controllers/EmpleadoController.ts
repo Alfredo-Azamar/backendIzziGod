@@ -158,7 +158,7 @@ class EmpleadoController extends AbstractController {
       res.status(500).send("Internal server error" + err);
     }
   }
-
+  
   private async getConsultarEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -230,6 +230,7 @@ class EmpleadoController extends AbstractController {
   }
 
   // Función que calcula el promedio de la calificacion de las llamadas de un empleado en un día
+  // -----------------------------  INICIO DE LA FUNCION CORREGIDA --------------------------------
   private async getCalifPromDia(req: Request, res: Response) {
     try {
       const { id, date } = req.params;
@@ -237,11 +238,11 @@ class EmpleadoController extends AbstractController {
       const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
       });
-
+  
       if (!empleado) {
         return res.status(404).send("El empleado no existe");
       }
-
+  
       // Conversión de la fecha a un formato general
       const startDate = new Date(date);
       const endDate = new Date(date);
@@ -251,12 +252,13 @@ class EmpleadoController extends AbstractController {
       const llamadasCalif = await db.Llamada.findAll({
         where: {
           IdEmpleado: id,
-          Fecha: {
-            [db.Op.between]: [startDate, endDate],
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
           },
         },
         include: {
           model: db.Encuesta,
+          as: "Encuesta",
           attributes: ["Calificacion"],
         },
       });
@@ -274,8 +276,8 @@ class EmpleadoController extends AbstractController {
       let totalCalifs = 0;
 
       for (const llamada of llamadasCalif) {
-        for (const encuesta of llamada.Encuestas) {
-          sumCalifs += encuesta.Calificacion;
+        if (llamada.Encuesta) { // Check if Encuesta exists for the llamada
+          sumCalifs += llamada.Encuesta.Calificacion;
           totalCalifs++;
         }
       }
@@ -287,6 +289,7 @@ class EmpleadoController extends AbstractController {
       res.status(500).send("Error interno del servidor: " + error);
     }
   }
+  // -----------------------------  FIN DE LA FUNCION CORREGIDA --------------------------------
 
   private getTest(req: Request, res: Response) {
     try {

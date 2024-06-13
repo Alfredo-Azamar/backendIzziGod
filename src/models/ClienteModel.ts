@@ -2,8 +2,8 @@ import { DataTypes, Model, Sequelize } from 'sequelize';
 
 
 enum SexoEnum {
-    Masculino = "masculino",
-    Femenino = "femenino",
+    Masculino = "male",
+    Femenino = "female",
     Otro = "otro"
 }
 
