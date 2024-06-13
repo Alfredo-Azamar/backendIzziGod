@@ -26,11 +26,11 @@ class EmpleadoController extends AbstractController {
     // Ejemplo de petición:
     // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
     this.router.get("/califPromDia/:id/calificaciones/:date", this.getCalifPromDia.bind(this));//ERROR
-    this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this));
-    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
-    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));
+    this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this)); // Suma de llamadas de un empleado
+    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this)); // Consultar empleado
+    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this)); // Promedio de duración de llamadas
     this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
-    this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
+    this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this)); //Notificaciones
   }
 
   private async EMERGENCIA(req: Request, res: Response) {
