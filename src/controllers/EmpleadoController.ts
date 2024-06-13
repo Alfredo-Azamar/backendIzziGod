@@ -31,6 +31,87 @@ class EmpleadoController extends AbstractController {
     this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));
     this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
     this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
+    this.router.get("/llamadasDiaHoyEmpleado/:id/:date", this.getLlamadasDiaHoyEmpleado.bind(this));
+    this.router.get("/modaDeSentimientoEmpleado/:id", this.getModaDeSentimientoEmpleado.bind(this));
+  }
+
+  private async getModaDeSentimientoEmpleado(req: Request, res: Response) {
+    try {
+      const {id} = req.params;
+
+      const empleadoId = await db.Empleado.findOne({
+        where: { IdEmpleado: id },
+        attributes: ["IdEmpleado"]
+      });
+
+      if (!empleadoId) {
+        return res.status(404).send("El empleado no existe");
+      }
+
+      const llamadasEmpleado = await db.Llamada.findAll({
+        where: { IdEmpleado: id },
+        attributes: ["Sentiment"],
+      });
+
+      const sentimientos = llamadasEmpleado.map((llamada: any) => llamada.Sentiment);
+
+      const moda = await this.calculateMode(sentimientos);
+
+      res.status(200).json(moda);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error " + error);
+    }
+  }
+
+  private async calculateMode(sentimientos: any[]) {
+    let mode = 0;
+    let count = 0;
+
+    for (let i = 0; i < sentimientos.length; i++) {
+      let tempCount = 0;
+      for (let j = 0; j < sentimientos.length; j++) {
+        if (sentimientos[j] === sentimientos[i]) {
+          tempCount++;
+        }
+      }
+      if (tempCount > count) {
+        count = tempCount;
+        mode = sentimientos[i];
+      }
+    }
+
+    return mode;
+  }
+
+  private async getLlamadasDiaHoyEmpleado(req: Request, res: Response) {
+    try {
+
+      const { id, date } = req.params;
+
+      // Conversión de la fecha a un formato general
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+
+      const llamadas = await db.Llamada.findAll({
+        where: {
+          IdEmpleado: id,
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          }
+        }
+      });
+
+      // Numero de llamadas
+      const numLlamadas = llamadas.length;
+
+      res.status(200).json(numLlamadas);
+
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error " + error);
+    }
   }
 
   private async EMERGENCIA(req: Request, res: Response) {
