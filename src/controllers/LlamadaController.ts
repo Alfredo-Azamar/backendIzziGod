@@ -29,7 +29,7 @@ class LlamadaController extends AbstractController {
     this.router.get("/infoIncidencias", this.getInfoIncidencias.bind(this));
     this.router.get('/consultarSolucion/:asunto', this.getConsultarSolucion.bind(this));
     this.router.get('/consultarSoluciones', this.getConsultarSoluciones.bind(this));
-    this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this));
+    this.router.get("/llamadasDeHoy", this.getLlamadasDeHoy.bind(this)); //Llamadas del dia de hoy de todos los agentes (?)
     this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this)); //Notificaciones 
     this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this)); //Notificaciones 
     this.router.put("/actualizarLlamadaFinalizada", this.putActualizarLlamadaFinalizada.bind(this)); //Socket 
@@ -42,6 +42,57 @@ class LlamadaController extends AbstractController {
     this.router.get("/tipoEmocionPorDia", this.emocionesPorDia.bind(this));
     this.router.put("/cambiarSentiment", this.cambiarSentiment.bind(this));
     this.router.put("/solucionLlamada", this.solucionLlamada.bind(this));
+    // this.router.get("/llamadasDiaHoyEmpleado/:id", this.getLlamadasDiaHoyEmpleado.bind(this));
+    this.router.get("/llamadasDiaHoyEmpleado/:id/:date", this.getLlamadasDiaHoyEmpleado.bind(this));
+  }
+
+  // private async getLlamadasDiaHoyEmpleado(req: Request, res: Response) {
+  //   try {
+
+  //     const { id } = req.params;
+
+  //     const llamadas = await db.Llamada.findAll({
+  //       where: {
+  //         IdEmpleado: id
+  //       }
+  //     });
+
+  //     res.status(200).json(llamadas);
+
+  //   } catch (error: any) {
+  //     console.log(error);
+  //     res.status(500).send("Internal server error " + error);
+  //   }
+  // }
+
+  private async getLlamadasDiaHoyEmpleado(req: Request, res: Response) {
+    try {
+
+      const { id, date } = req.params;
+
+      // Conversión de la fecha a un formato general
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+
+      const llamadas = await db.Llamada.findAll({
+        where: {
+          IdEmpleado: id,
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          }
+        }
+      });
+
+      // Numero de llamadas
+      const numLlamadas = llamadas.length;
+
+      res.status(200).json(numLlamadas);
+
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error " + error);
+    }
   }
 
   private async solucionLlamada(req: Request, res: Response) {
@@ -505,7 +556,7 @@ class LlamadaController extends AbstractController {
 
   private async getConsultarLlamadas(req: Request, res: Response) {
     try {
-      let llamadas = await db["Llamada"].findAll();
+      let llamadas = await db.Llamada.findAll();
       res.status(200).json(llamadas);
     } catch (err) {
       console.log(err);
