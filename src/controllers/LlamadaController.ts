@@ -45,6 +45,29 @@ class LlamadaController extends AbstractController {
     this.router.put("/solucionLlamada", this.solucionLlamada.bind(this));
     this.router.get("/emocionesPorDiaAgente/:id", this.emocionesPorDiaAgente.bind(this));
     this.router.get("/averageCallTime/:id", this.averageCallTime.bind(this));
+    this.router.get("/llamadasDiaHoy/:date", this.getLlamadasDiaHoy.bind(this)); // BORRAR
+  }
+
+  private async getLlamadasDiaHoy(req: Request, res: Response) {
+    try { 
+      const date = req.params.date;
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+
+      const llamadasDelDia = await db.Llamada.findAll({
+        where: {
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          }
+        }
+      })
+
+      res.status(200).json(llamadasDelDia);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error " + error);
+    }
   }
 
   private async solucionLlamada(req: Request, res: Response) {

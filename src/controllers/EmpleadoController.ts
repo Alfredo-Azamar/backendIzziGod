@@ -18,30 +18,122 @@ class EmpleadoController extends AbstractController {
   //Declarar todas las rutas del controlador
   protected initRoutes(): void {
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get("/consultarEmpleados", this.getConsultarEmpleados.bind(this));
+    this.router.get(
+      "/consultarEmpleados",
+      this.getConsultarEmpleados.bind(this)
+    );
     this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));
-    this.router.get("/calificacionPromedio/:id", this.getCalificacionPromedio.bind(this));
+    this.router.get(
+      "/calificacionPromedio/:id",
+      this.getCalificacionPromedio.bind(this)
+    );
 
     // Api para mostrar el promedio de la calificacion de las llamadas de un empleado en un día
     // Ejemplo de petición:
     // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
-    this.router.get("/califPromDia/:id/calificaciones/:date", this.getCalifPromDia.bind(this));//ERROR
-    this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this));
-    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
-    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));
+    this.router.get(
+      "/califPromDia/:id/calificaciones/:date",
+      this.getCalifPromDia.bind(this)
+    ); //ERROR
+    this.router.get(
+      "/consultarLlamadasEmpleado/:id",
+      this.getSumLlamadasEmpleado.bind(this)
+    );
+    this.router.get(
+      "/consutarEmpleado/:id",
+      this.getConsultarEmpleado.bind(this)
+    );
+    this.router.get(
+      "/consultarPromLlamadasEmpleado/:id",
+      this.getPromLlamadasEmpleado.bind(this)
+    );
     this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
     this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
-    this.router.get("/llamadasDiaHoyEmpleado/:id/:date", this.getLlamadasDiaHoyEmpleado.bind(this));
-    this.router.get("/modaDeSentimientoEmpleado/:id", this.getModaDeSentimientoEmpleado.bind(this));
+    this.router.get(
+      "/llamadasDiaHoyEmpleado/:id/:date",
+      this.getLlamadasDiaHoyEmpleado.bind(this)
+    );
+    this.router.get(
+      "/modaDeSentimientoEmpleado/:id",
+      this.getModaDeSentimientoEmpleado.bind(this)
+    );
+    // Api para mostrar un leaderboard de los empleados con mas llamadas en el dia
+    this.router.get(
+      "/leaderboardLlamadasDia/:date/:idEmpleado",
+      this.getLeaderboardLlamadasDia.bind(this)
+    );
+  }
+
+  private async getLeaderboardLlamadasDia(req: Request, res: Response) {
+    try {
+      const { date, idEmpleado } = req.params;
+  
+      // Conversión de la fecha a un formato general
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+
+      const idEmpleadoLlamadas = await db.Llamada.findAll({
+        where: {
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        attributes: ["IdEmpleado"]
+      });
+
+      const idEmpleados = idEmpleadoLlamadas.map((llamada: any) => llamada.IdEmpleado);
+  
+      console.log('idEmpleados:', idEmpleados);
+  
+      const leaderboard = await this.calculateLeaderboard(idEmpleados);
+    
+      const position = leaderboard.findIndex((entry: any) => entry.nombre === idEmpleado);
+  
+      res.status(200).json(position + 1);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error " + error);
+    }
+  }
+  
+  private async calculateLeaderboard(nombres: any) {
+    let leaderboard: { [key: string]: number } = {};
+  
+    console.log('nombres:', nombres);
+  
+    // Contar las ocurrencias de cada nombre
+    for (let i = 0; i < nombres.length; i++) {
+      const nombre = nombres[i];
+      if (nombre) {
+        if (leaderboard[nombre]) {
+          leaderboard[nombre] += 1;
+        } else {
+          leaderboard[nombre] = 1;
+        }
+      }
+    }
+  
+    console.log('leaderboard (before sorting):', leaderboard);
+  
+    // Convertir el objeto leaderboard en un array de objetos JSON ordenados por el número de ocurrencias en orden descendente
+    let sortedLeaderboard = Object.keys(leaderboard).map(nombre => ({
+      nombre: nombre,
+      llamadas: leaderboard[nombre]
+    })).sort((a, b) => b.llamadas - a.llamadas);
+  
+    console.log('sortedLeaderboard:', sortedLeaderboard);
+  
+    return sortedLeaderboard;
   }
 
   private async getModaDeSentimientoEmpleado(req: Request, res: Response) {
     try {
-      const {id} = req.params;
+      const { id } = req.params;
 
       const empleadoId = await db.Empleado.findOne({
         where: { IdEmpleado: id },
-        attributes: ["IdEmpleado"]
+        attributes: ["IdEmpleado"],
       });
 
       if (!empleadoId) {
@@ -53,7 +145,9 @@ class EmpleadoController extends AbstractController {
         attributes: ["Sentiment"],
       });
 
-      const sentimientos = llamadasEmpleado.map((llamada: any) => llamada.Sentiment);
+      const sentimientos = llamadasEmpleado.map(
+        (llamada: any) => llamada.Sentiment
+      );
 
       const moda = await this.calculateMode(sentimientos);
 
@@ -86,7 +180,6 @@ class EmpleadoController extends AbstractController {
 
   private async getLlamadasDiaHoyEmpleado(req: Request, res: Response) {
     try {
-
       const { id, date } = req.params;
 
       // Conversión de la fecha a un formato general
@@ -99,15 +192,14 @@ class EmpleadoController extends AbstractController {
           IdEmpleado: id,
           FechaHora: {
             [Op.between]: [startDate, endDate],
-          }
-        }
+          },
+        },
       });
 
       // Numero de llamadas
       const numLlamadas = llamadas.length;
 
       res.status(200).json(numLlamadas);
-
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Internal server error " + error);
@@ -117,7 +209,7 @@ class EmpleadoController extends AbstractController {
   private async EMERGENCIA(req: Request, res: Response) {
     try {
       const { id, nombre, apellido } = req.body;
-      
+
       const io = req.app.get("socketio");
 
       if (!io) {
@@ -135,7 +227,8 @@ class EmpleadoController extends AbstractController {
 
   private async agentesActivos(req: Request, res: Response) {
     try {
-      const llamadas = await db.sequelize.query(`
+      const llamadas = await db.sequelize.query(
+        `
       SELECT 
           SUM(CASE WHEN L.Estado = 1 THEN 1 ELSE 0 END) AS Activos,
           SUM(CASE WHEN L.Estado = 0 THEN 1 ELSE 0 END) AS Inactivos
@@ -150,7 +243,9 @@ class EmpleadoController extends AbstractController {
       LEFT JOIN Paquete ON Contrato.IdPaquete = Paquete.IdPaquete
       ORDER BY Empleado.IdEmpleado;
 
-      `, { type: db.sequelize.QueryTypes.SELECT });
+      `,
+        { type: db.sequelize.QueryTypes.SELECT }
+      );
 
       return res.status(200).json(llamadas);
     } catch (err) {
@@ -158,7 +253,7 @@ class EmpleadoController extends AbstractController {
       res.status(500).send("Internal server error" + err);
     }
   }
-  
+
   private async getConsultarEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -238,11 +333,11 @@ class EmpleadoController extends AbstractController {
       const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
       });
-  
+
       if (!empleado) {
         return res.status(404).send("El empleado no existe");
       }
-  
+
       // Conversión de la fecha a un formato general
       const startDate = new Date(date);
       const endDate = new Date(date);
@@ -276,7 +371,8 @@ class EmpleadoController extends AbstractController {
       let totalCalifs = 0;
 
       for (const llamada of llamadasCalif) {
-        if (llamada.Encuesta) { // Check if Encuesta exists for the llamada
+        if (llamada.Encuesta) {
+          // Check if Encuesta exists for the llamada
           sumCalifs += llamada.Encuesta.Calificacion;
           totalCalifs++;
         }
