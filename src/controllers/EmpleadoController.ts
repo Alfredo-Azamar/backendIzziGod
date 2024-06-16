@@ -57,17 +57,251 @@ class EmpleadoController extends AbstractController {
       "/modaDeSentimientoEmpleado/:id",
       this.getModaDeSentimientoEmpleado.bind(this)
     );
-    // Api para mostrar un leaderboard de los empleados con mas llamadas en el dia
     this.router.get(
       "/leaderboardLlamadasDia/:date/:idEmpleado",
       this.getLeaderboardLlamadasDia.bind(this)
     );
+    this.router.get("/leaderboardCalificacionesDia/:date/:idEmpleado", this.getLeaderboardCalificacionesDia.bind(this));
+    this.router.get("/getPromedioTiempoLlamada/:id", this.getPromedioTiempoLlamada.bind(this));
+    this.router.get("/getAgenteMejorCalifMes/:date", this.getAgenteMejorCalifMes.bind(this));
+    this.router.get("/getAgenteMasLlamadasDia/:date", this.getAgenteMasLlamadasDia.bind(this));
+  }
+
+  private async getAgenteMasLlamadasDia(req: Request, res: Response) {
+    try {
+      const { date } = req.params;
+  
+      // Conversión de la fecha a un formato general
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+  
+      // Obtener el ID del empleado con más llamadas en el día
+      const idEmpleadoLlamadas = await db.Llamada.findAll({
+        where: {
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        attributes: [
+          "IdEmpleado",
+          [db.sequelize.fn("COUNT", "IdEmpleado"), "count"],
+        ],
+        group: ["IdEmpleado"],
+        order: [[db.sequelize.literal("count"), "DESC"]],
+        limit: 1,
+      });
+  
+      if (idEmpleadoLlamadas.length === 0) {
+        return res.status(404).send("No se encontraron llamadas en la fecha indicada");
+      }
+  
+      const idEmpleado = idEmpleadoLlamadas[0].IdEmpleado;
+  
+      // Obtener el nombre y apellido del empleado con más llamadas
+      const empleado = await db.Empleado.findOne({
+        where: { IdEmpleado: idEmpleado },
+        attributes: ["Nombre", "ApellidoP"],
+      });
+  
+      if (!empleado) {
+        return res.status(404).send("Empleado no encontrado");
+      }
+
+  
+      res.status(200).json({ nombre: empleado.Nombre, apellido: empleado.ApellidoP});
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error " + error);
+    }
+  }
+  
+
+  private async getAgenteMejorCalifMes(req: Request, res: Response) {
+    try {
+      const { date } = req.params;
+    
+      // Conversión de la fecha a un formato general
+      const endDate = new Date(date);
+      const startDate = new Date(date);
+      startDate.setMonth(startDate.getMonth() - 1);
+    
+      // Obtener todas las llamadas y las calificaciones de encuestas en el rango de fechas específico
+      const llamadasCalif = await db.Llamada.findAll({
+        where: {
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        include: [
+          {
+            model: db.Encuesta,
+            as: "Encuesta",
+            attributes: ["Calificacion"],
+          },
+          {
+            model: db.Empleado, // Suponiendo que la relación está definida en el modelo Llamada
+            as: "Empleado",
+            attributes: ["Nombre", "ApellidoP"],
+          }
+        ],
+      });
+    
+      if (llamadasCalif.length === 0) {
+        return res
+          .status(404)
+          .send("No se encontraron llamadas en el rango de fechas indicado");
+      }
+    
+      // Calcular el promedio de calificaciones para cada empleado
+      const empleadoCalifs: { [key: string]: { sum: number; count: number, nombre: string, apellido: string } } = {};
+    
+      for (const llamada of llamadasCalif) {
+        if (llamada.Encuesta && llamada.Empleado) {
+          const idEmpleado = llamada.IdEmpleado;
+          const nombre = llamada.Empleado.Nombre;
+          const apellido = llamada.Empleado.ApellidoP;
+          if (!empleadoCalifs[idEmpleado]) {
+            empleadoCalifs[idEmpleado] = { sum: 0, count: 0, nombre, apellido };
+          }
+          empleadoCalifs[idEmpleado].sum += llamada.Encuesta.Calificacion;
+          empleadoCalifs[idEmpleado].count += 1;
+        }
+      }
+    
+      const leaderboard = Object.keys(empleadoCalifs).map((idEmpleado) => {
+        const { sum, count, nombre, apellido } = empleadoCalifs[idEmpleado];
+        return { idEmpleado, promedio: sum / count, nombre, apellido };
+      });
+    
+      // Ordenar el leaderboard por el promedio de calificaciones en orden descendente
+      leaderboard.sort((a, b) => b.promedio - a.promedio);
+    
+      // Obtener el agente con la mejor calificación
+      const mejorAgente = leaderboard[0];
+    
+      if (!mejorAgente) {
+        return res.status(404).send("No se encontró ningún agente con calificaciones");
+      }
+    
+      res.status(200).json({ nombre: mejorAgente.nombre, apellido: mejorAgente.apellido });
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Error interno del servidor: " + error);
+    }
+  }
+  
+  
+
+  private async getPromedioTiempoLlamada(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const result = await db.sequelize.query(
+        `SELECT AVG(Duracion) AS avgTime
+        FROM Llamada
+        WHERE IdEmpleado = :id;`,
+        {
+          type: db.sequelize.QueryTypes.SELECT,
+          replacements: { id: id }
+        });
+  
+      // Extraer avgTime del resultado
+      const avgTime = result[0]?.avgTime;
+  
+      if (avgTime !== null && avgTime !== undefined) {
+        // Convertir avgTime a minutos y segundos
+        const totalSeconds = Math.round(avgTime);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  
+        res.status(200).json({ value: formattedTime });
+      } else {
+        res.status(200).json({ value: "00:00" });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error: " + err);
+    }
+  }
+
+  private async getLeaderboardCalificacionesDia(req: Request, res: Response) {
+    try {
+      const { date, idEmpleado } = req.params;
+  
+      // Conversión de la fecha a un formato general
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+  
+      // Obtener todas las llamadas y las calificaciones de encuestas en una fecha específica
+      const llamadasCalif = await db.Llamada.findAll({
+        where: {
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        include: {
+          model: db.Encuesta,
+          as: "Encuesta",
+          attributes: ["Calificacion"],
+        },
+      });
+  
+      if (llamadasCalif.length === 0) {
+        return res
+          .status(404)
+          .send("No se encontraron llamadas en la fecha indicada");
+      }
+  
+      // Calcular el promedio de calificaciones para cada empleado
+      const empleadoCalifs: { [key: string]: { sum: number; count: number } } = {};
+  
+      for (const llamada of llamadasCalif) {
+        if (llamada.Encuesta) {
+          const idEmpleado = llamada.IdEmpleado;
+          if (!empleadoCalifs[idEmpleado]) {
+            empleadoCalifs[idEmpleado] = { sum: 0, count: 0 };
+          }
+          empleadoCalifs[idEmpleado].sum += llamada.Encuesta.Calificacion;
+          empleadoCalifs[idEmpleado].count += 1;
+        }
+      }
+  
+      const leaderboard = Object.keys(empleadoCalifs).map((idEmpleado) => {
+        const { sum, count } = empleadoCalifs[idEmpleado];
+        return { idEmpleado, promedio: sum / count, posicion: 0 };
+      });
+  
+      // Ordenar el leaderboard por el promedio de calificaciones en orden descendente
+      leaderboard.sort((a, b) => b.promedio - a.promedio);
+  
+      // Añadir la posición de cada empleado en el leaderboard
+      leaderboard.forEach((entry, index) => {
+        entry.posicion = index + 1;
+      });
+  
+      // Buscar la posición del empleado específico si se proporciona el idEmpleado
+      if (idEmpleado) {
+      const empleadoPos = leaderboard.find(entry => entry.idEmpleado === idEmpleado);
+      if (empleadoPos) {
+        return res.status(200).json({ rank: empleadoPos.posicion });
+      } else {
+        return res.status(404).send("Empleado no encontrado en el leaderboard");
+      }
+    }
+  
+      res.status(200).json(leaderboard);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Error interno del servidor: " + error);
+    }
   }
 
   private async getLeaderboardLlamadasDia(req: Request, res: Response) {
     try {
       const { date, idEmpleado } = req.params;
-  
+
       // Conversión de la fecha a un formato general
       const startDate = new Date(date);
       const endDate = new Date(date);
@@ -79,29 +313,33 @@ class EmpleadoController extends AbstractController {
             [Op.between]: [startDate, endDate],
           },
         },
-        attributes: ["IdEmpleado"]
+        attributes: ["IdEmpleado"],
       });
 
-      const idEmpleados = idEmpleadoLlamadas.map((llamada: any) => llamada.IdEmpleado);
-  
-      console.log('idEmpleados:', idEmpleados);
-  
+      const idEmpleados = idEmpleadoLlamadas.map(
+        (llamada: any) => llamada.IdEmpleado
+      );
+
+      console.log("idEmpleados:", idEmpleados);
+
       const leaderboard = await this.calculateLeaderboard(idEmpleados);
-    
-      const position = leaderboard.findIndex((entry: any) => entry.nombre === idEmpleado);
-  
-      res.status(200).json(position + 1);
+
+      const position = leaderboard.findIndex(
+        (entry: any) => entry.nombre === idEmpleado
+      );
+
+      res.status(200).json({ rank: position + 1 });
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Internal server error " + error);
     }
   }
-  
+
   private async calculateLeaderboard(nombres: any) {
     let leaderboard: { [key: string]: number } = {};
-  
-    console.log('nombres:', nombres);
-  
+
+    console.log("nombres:", nombres);
+
     // Contar las ocurrencias de cada nombre
     for (let i = 0; i < nombres.length; i++) {
       const nombre = nombres[i];
@@ -113,17 +351,19 @@ class EmpleadoController extends AbstractController {
         }
       }
     }
-  
-    console.log('leaderboard (before sorting):', leaderboard);
-  
+
+    console.log("leaderboard (before sorting):", leaderboard);
+
     // Convertir el objeto leaderboard en un array de objetos JSON ordenados por el número de ocurrencias en orden descendente
-    let sortedLeaderboard = Object.keys(leaderboard).map(nombre => ({
-      nombre: nombre,
-      llamadas: leaderboard[nombre]
-    })).sort((a, b) => b.llamadas - a.llamadas);
-  
-    console.log('sortedLeaderboard:', sortedLeaderboard);
-  
+    let sortedLeaderboard = Object.keys(leaderboard)
+      .map((nombre) => ({
+        nombre: nombre,
+        llamadas: leaderboard[nombre],
+      }))
+      .sort((a, b) => b.llamadas - a.llamadas);
+
+    console.log("sortedLeaderboard:", sortedLeaderboard);
+
     return sortedLeaderboard;
   }
 
@@ -151,7 +391,7 @@ class EmpleadoController extends AbstractController {
 
       const moda = await this.calculateMode(sentimientos);
 
-      res.status(200).json(moda);
+      res.status(200).json({ value: moda });
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Internal server error " + error);
@@ -199,7 +439,7 @@ class EmpleadoController extends AbstractController {
       // Numero de llamadas
       const numLlamadas = llamadas.length;
 
-      res.status(200).json(numLlamadas);
+      res.status(200).json({ value: numLlamadas });
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Internal server error " + error);
@@ -379,7 +619,7 @@ class EmpleadoController extends AbstractController {
       }
 
       const promGeneral = totalCalifs > 0 ? sumCalifs / totalCalifs : 0;
-      res.status(200).json({ promGeneral });
+      res.status(200).json({ value: promGeneral });
     } catch (error: any) {
       console.log(error);
       res.status(500).send("Error interno del servidor: " + error);
