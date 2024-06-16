@@ -66,7 +66,44 @@ class EmpleadoController extends AbstractController {
     this.router.get("/getAgenteMejorCalifMes/:date", this.getAgenteMejorCalifMes.bind(this));
     this.router.get("/getAgenteMasLlamadasDia/:date", this.getAgenteMasLlamadasDia.bind(this));
     this.router.get("/getCalifPromDiaAgentes/:date", this.getCalifPromDiaAgentes.bind(this));
+    this.router.get("/duracionPromMeses/:IdEmpleado", this.getDuracionPromMeses.bind(this));
   }
+
+  private async getDuracionPromMeses(req: Request, res: Response) {
+    try {
+
+      const { IdEmpleado } = req.params;
+
+      const whereCondition: any = {
+        IdEmpleado,
+        FechaHora: {
+          [Op.between]: [
+            db.sequelize.literal("DATE_SUB(CURDATE(), INTERVAL 5 MONTH)"),
+            db.sequelize.literal("CURDATE()")
+          ]
+        }
+      };
+
+      const result = await db.Llamada.findAll({
+        attributes: [
+          [db.sequelize.fn('DATE_FORMAT', db.sequelize.col('FechaHora'), '%m'), 'MonthNumber'],
+          [db.sequelize.fn('DATE_FORMAT', db.sequelize.col('FechaHora'), '%M'), 'Month'],
+          [db.sequelize.fn('AVG', db.sequelize.col('Duracion')), 'AvgDuration']
+        ],
+        where: whereCondition,
+        group: ['IdEmpleado', db.sequelize.fn('DATE_FORMAT', db.sequelize.col('FechaHora'), '%Y-%m')],
+        order: [
+          [db.sequelize.literal('MonthNumber'), 'ASC']
+        ]
+      });
+
+      res.json(result);
+
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Error interno del servidor: " + error);
+  }
+}
 
   private async getCalifPromDiaAgentes(req: Request, res: Response) {
     try {
