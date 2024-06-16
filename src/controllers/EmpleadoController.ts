@@ -65,6 +65,75 @@ class EmpleadoController extends AbstractController {
     this.router.get("/getPromedioTiempoLlamada/:id", this.getPromedioTiempoLlamada.bind(this));
     this.router.get("/getAgenteMejorCalifMes/:date", this.getAgenteMejorCalifMes.bind(this));
     this.router.get("/getAgenteMasLlamadasDia/:date", this.getAgenteMasLlamadasDia.bind(this));
+    this.router.get("/getCalifPromDiaAgentes/:date", this.getCalifPromDiaAgentes.bind(this));
+  }
+
+  private async getCalifPromDiaAgentes(req: Request, res: Response) {
+    try {
+      const { date } = req.params;
+  
+      // Conversión de la fecha a un formato general
+      const endDate = new Date(date);
+      const startDate = new Date(date);
+      startDate.setMonth(startDate.getMonth() - 1);
+  
+      // Obtener todas las llamadas y las calificaciones de encuestas en el rango de fechas específico
+      const llamadasCalif = await db.Llamada.findAll({
+        where: {
+          FechaHora: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+        include: [
+          {
+            model: db.Encuesta,
+            as: "Encuesta",
+            attributes: ["Calificacion"],
+          },
+          {
+            model: db.Empleado,
+            as: "Empleado",
+            attributes: ["Nombre", "ApellidoP"],
+          }
+        ],
+      });
+  
+      if (llamadasCalif.length === 0) {
+        return res
+          .status(404)
+          .send("No se encontraron llamadas en el rango de fechas indicado");
+      }
+  
+      // Calcular el promedio de calificaciones para cada empleado por mes
+      const empleadoCalifs: { [key: string]: { sum: number; count: number, nombre: string, apellido: string } } = {};
+  
+      for (const llamada of llamadasCalif) {
+        if (llamada.Encuesta && llamada.Empleado) {
+          const idEmpleado = llamada.IdEmpleado;
+          const nombre = llamada.Empleado.Nombre;
+          const apellido = llamada.Empleado.ApellidoP;
+          if (!empleadoCalifs[idEmpleado]) {
+            empleadoCalifs[idEmpleado] = { sum: 0, count: 0, nombre, apellido };
+          }
+          empleadoCalifs[idEmpleado].sum += llamada.Encuesta.Calificacion;
+          empleadoCalifs[idEmpleado].count += 1;
+        }
+      }
+  
+      // Formatear los datos para la respuesta
+      const formattedData = Object.keys(empleadoCalifs).map(idEmpleado => {
+        const { sum, count, nombre, apellido } = empleadoCalifs[idEmpleado];
+        return {
+          agente: `${nombre} ${apellido}`,
+          value: (sum / count).toFixed(2) // Formatear el promedio a 2 decimales
+        };
+      });
+  
+      res.status(200).json(formattedData);
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Error interno del servidor: " + error);
+    }
   }
 
   private async getAgenteMasLlamadasDia(req: Request, res: Response) {
