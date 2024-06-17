@@ -33,7 +33,7 @@ class ConnectController extends AbstractController {
   protected initRoutes(): void {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get("/sentiment/:idCall", this.sendSentiment.bind(this));
+    this.router.get("/sentiment/:idCall", this.authMiddleware.verifyToken, this.sendSentiment.bind(this));
   }
 
   // Test endpoint

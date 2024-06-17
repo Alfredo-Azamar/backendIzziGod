@@ -29,7 +29,7 @@ class ReporteController extends AbstractController {
 
     this.router.post("/crearNotificacion", this.postGlobalNotification.bind(this)); 
 
-    this.router.post("/crearNotificacionAgente", this.postAgentNotification.bind(this)); 
+    this.router.post("/crearNotificacionAgente", this.authMiddleware.verifyToken, this.postAgentNotification.bind(this)); 
 
     this.router.delete("/eliminarNotificacion/:idNoti/:idAgente", this.deleteNotificacion.bind(this));
 
