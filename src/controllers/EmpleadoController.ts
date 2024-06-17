@@ -7,7 +7,7 @@ class EmpleadoController extends AbstractController {
   //Singleton
   //Class attribute
   private static _instance: EmpleadoController;
-  //Método de clase
+  //Class Method
   public static get instance(): AbstractController {
     if (!this._instance) {
       this._instance = new EmpleadoController("empleado");

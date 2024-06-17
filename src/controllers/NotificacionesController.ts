@@ -6,35 +6,47 @@ import moment from 'moment-timezone';
 
 class ReporteController extends AbstractController {
   //Singleton
-  //Atributo de clase
+  //Class attribute
   private static _instance: ReporteController;
-  //Método de clase
+  //Class Method
   public static get instance(): AbstractController {
     if (!this._instance) {
       this._instance = new ReporteController("notificacion");
     }
     return this._instance;
   }
-  //Declarar todas las rutas del controlador
+  //Routes controller declaration
   protected initRoutes(): void {
+    // Test route
     this.router.get("/test", this.getTest.bind(this));
-    this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this)); //GLOBAL
-    this.router.post("/crearNotificacionAgente", this.postCrearNotificacionAgente.bind(this)); //AGENTE
+
+    //Create global notification
+    this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this)); 
+
+    //Create notification for a specific agent
+    this.router.post("/crearNotificacionAgente", this.postCrearNotificacionAgente.bind(this)); 
+
+    // Delete notification
     this.router.delete("/eliminarNotificacion/:idNoti/:idAgente", this.deleteNotificacion.bind(this));
+
+    // Get all notifications
     this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
-    this.router.get("/getNotisAgentes", this.getNotisAgentes.bind(this));
+
+    // Get all notifications for a specific agent
     this.router.get("/getNotificacionAgente/:id", this.getNotificacionAgente.bind(this));
   }
 
+  // Get all notifications for a specific agent
   private async getNotificacionAgente(req: Request, res: Response) {
     try {
       const { id } = req.params;
 
+      // Find all notifications for the agent
       const idNotis = await db.NotiAgente.findAll({
         where: {IdEmpleado: id},
         attributes: ["IdNotificacion"]
       })
-      //Mapear el arreglo de idNotis para buscar su descripción en la tabla Notificacion
+      //Map the idNotis array to find its description in the Notification table
       const notificaciones = await db.Notificacion.findAll({
         where: {
           IdNotificacion: {
@@ -50,18 +62,7 @@ class ReporteController extends AbstractController {
     }
   }
 
-  private async getNotisAgentes(req: Request, res: Response) {
-    try{
-      const notiAgentec= await db.NotiAgente.findAll({
-        where: {IdEmpleado: "joahan11"},
-      });
-      res.status(200).json(notiAgentec);
-    } catch (error: any) {
-      console.log(error);
-      res.status(500).send("Internal server error" + error);
-    }
-  }
-
+  // Get all notifications
   private async getNotificaciones(req: Request, res: Response) {
     try {
       const notificaciones = await db.Notificacion.findAll();
@@ -72,6 +73,7 @@ class ReporteController extends AbstractController {
     }
   }
 
+  // Delete notification
   private async deleteNotificacion(req: Request, res: Response) {
     try {
       const {idNoti, idAgente} = req.params;
@@ -92,6 +94,7 @@ class ReporteController extends AbstractController {
   }
 
 
+  // Create notification for a specific agent
   private async postCrearNotificacionAgente(req: Request, res: Response) {
     try {
       const {Titulo, Descripcion, IdEmpleado} = req.body;
@@ -108,8 +111,8 @@ class ReporteController extends AbstractController {
         IdEmpleado,
       });
 
-      // Envia notificacion al empleado
-      const io = req.app.get("socketio"); // Web Socket
+      // Notify the agent that a notification has been created
+      const io = req.app.get("socketio"); 
       if (io) {
         const notificacionEmpleado = await this.notificacionAgenteBandera(
           IdEmpleado
@@ -128,6 +131,7 @@ class ReporteController extends AbstractController {
     }
   }
 
+  // Get all notifications for a specific agent
   private async notificacionAgenteBandera(id: any) {
     try {
       const idNotis = await db.NotiAgente.findAll({
@@ -135,7 +139,7 @@ class ReporteController extends AbstractController {
         attributes: ["IdNotificacion"]
       })
 
-      //Mapear el arreglo de idNotis para buscar su descripción en la tabla Notificacion
+      //Map the idNotis array to find its description in the Notification table
       const notificaciones = await db.Notificacion.findAll({
         where: {
           IdNotificacion: {
@@ -152,6 +156,7 @@ class ReporteController extends AbstractController {
     }
   }
 
+  // Create global notification
   private async postCrearNotificacion(req: Request, res: Response) {
     try {
       // Creates new notification
@@ -161,40 +166,36 @@ class ReporteController extends AbstractController {
 
       console.log(subFechaHora);
 
+      // Inster new notification
       const newNoti = await db.sequelize.query(`
         INSERT INTO Notificacion(FechaHora, Titulo, Descripcion)
         VALUES('${subFechaHora}', '${Titulo}', '${Descripcion}');
         `);
-      
-      // const newNoti = await db.Notificacion.create({
-      //   subFechaHora,
-      //   Titulo,
-      //   Descripcion
-      // });
 
+      // Find all agents
       const agentesId = await db.Empleado.findAll({
         where: {Rol: "agente"},
         attributes: ["IdEmpleado"]
       });
 
+      // Create a new notification for each agent
       const notiAgentes = agentesId.map((agente: any) => ({
         IdNotificacion: newNoti[0],
         IdEmpleado: agente.IdEmpleado
       }));
 
-      await db.NotiAgente.bulkCreate(notiAgentes);  // Inserta los datos de notiAgentes a la tabla
+      // Insert all the relations in the database
+      await db.NotiAgente.bulkCreate(notiAgentes);  
 
-      // Envia notificacion a todos los empleados
+      // Notify all agents that a new notification has been created
       const io = req.app.get("socketio"); // Web Socket
       if (io) {
-        // let count = 0;
-        // Send to every agent
+
+        // Notify each agent
         for (const agente of agentesId) {
           const notificacionEmpleado = await this.notificacionAgenteBandera(agente.IdEmpleado);
           console.log("Notificación enviada a empleado: " + agente.IdEmpleado);
-          // console.log(notificacionEmpleado);
           io.emit(`notificacion_empleado_${agente.IdEmpleado}` , notificacionEmpleado);
-          // count++;
         }
         console.log("Notificación empleado enviada a todos los agentes");
       } else { 
@@ -208,6 +209,7 @@ class ReporteController extends AbstractController {
     }
   }
 
+  // Test route
   private getTest(req: Request, res: Response) {
     try {
       console.log("Prueba exitosa :)");
