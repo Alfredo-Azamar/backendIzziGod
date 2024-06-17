@@ -22,6 +22,7 @@ class ReporteController extends AbstractController {
   }
   // Define all the endpoints of the controller "ReporteController"
   protected initRoutes(): void {
+    // Test route
     this.router.get("/test", this.getTest.bind(this));
     this.router.post("/crearReportePersonal", this.postPersonalReport.bind(this)); // DOUBT
     this.router.post("/crearReporte", this.postReport.bind(this));

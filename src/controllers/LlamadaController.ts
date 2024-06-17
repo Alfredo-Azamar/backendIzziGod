@@ -25,6 +25,7 @@ class LlamadaController extends AbstractController {
 
   // Define all the endpoints of the controller "LlamadaController"
   protected initRoutes(): void {
+    // Test route
     this.router.get("/test", this.getTest.bind(this));
 
     this.router.post("/crearEncuesta", this.postSurvey.bind(this));

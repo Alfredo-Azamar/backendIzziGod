@@ -27,8 +27,22 @@ class SNSController extends AbstractController {
 
   // Define all the endpoints of the controller 'SNSController'
   protected initRoutes(): void {
+    // Test route
+    this.router.get("/test", this.getTest.bind(this));
     this.router.post("/add-phone-number", this.addPhoneNumber.bind(this));
     this.router.post("/send-message", this.sendMessage.bind(this));
+  }
+
+  // Test endpoint
+  private getTest(req: Request, res: Response) {
+    try {
+      console.log("Prueba exitosa");
+      res.status(200).send("<h1>Prueba exitosa</h1>");
+      
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
   }
 
   // Add a phone number

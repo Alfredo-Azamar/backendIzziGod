@@ -31,6 +31,7 @@ class ConnectController extends AbstractController {
 
   // Define all the endpoints of the controller "ConnectController"
   protected initRoutes(): void {
+    // Test route
     this.router.get("/test", this.getTest.bind(this));
     this.router.get("/sentiment/:idCall", this.sendSentiment.bind(this));
   }
