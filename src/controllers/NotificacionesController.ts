@@ -27,7 +27,7 @@ class ReporteController extends AbstractController {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
 
-    this.router.post("/crearNotificacion", this.postGlobalNotification.bind(this)); 
+    this.router.post("/crearNotificacion", this.authMiddleware.verifyToken, this.postGlobalNotification.bind(this)); 
 
     this.router.post("/crearNotificacionAgente", this.authMiddleware.verifyToken, this.postAgentNotification.bind(this)); 
 

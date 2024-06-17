@@ -31,7 +31,7 @@ class LlamadaController extends AbstractController {
     this.router.post("/crearEncuesta", this.postSurvey.bind(this));
     this.router.post("/crearIncidencia", this.postIncident.bind(this));
     this.router.post("/crearLlamada", this.postNewCall.bind(this));
-    this.router.get("/averageCallDuration", this.getAverageCallDuration.bind(this));
+    this.router.get("/averageCallDuration", this.authMiddleware.verifyToken, this.getAverageCallDuration.bind(this));
     this.router.get("/averageCallTime/:id", this.authMiddleware.verifyToken, this.averageCallTime.bind(this));
     this.router.get("/consultarLlamadas", this.getAllCalls.bind(this));
     this.router.get("/consultarSolucion/:asunto", this.getSolution.bind(this));
@@ -43,12 +43,12 @@ class LlamadaController extends AbstractController {
     this.router.get("/llamadasDeHoy", this.getTodaysCalls.bind(this));
     this.router.get("/llamadasPorDia", this.getCallsPerDay.bind(this));
     this.router.get("/llamadasPorHoras", this.getCallsPerHour.bind(this));
-    this.router.get("/negativeCallsCount", this.getNegativeCallsCount.bind(this));
+    this.router.get("/negativeCallsCount", this.authMiddleware.verifyToken, this.getNegativeCallsCount.bind(this));
     this.router.get("/numPorAsunto", this.getCallSubject.bind(this));
     this.router.get("/obtenerSentimiento/:IdLlamada", this.authMiddleware.verifyToken, this.getSentiment.bind(this));
     this.router.get("/tipoEmocionPorDia", this.getEmotionsPerDay.bind(this));
     this.router.get("/topAgents/:num", this.getTopAgents.bind(this));
-    this.router.get("/topPeoresAgentes/:num", this.getWorstAgents.bind(this));
+    this.router.get("/topPeoresAgentes/:num", this.authMiddleware.verifyToken, this.getWorstAgents.bind(this));
     this.router.put("/cambiarSentiment", this.putChangeCallSentiment.bind(this));
     this.router.put("/actualizarLlamada", this.putCallDetails.bind(this));
     this.router.put("/actualizarLlamadaFinalizada",this.putEndingCallDetails.bind(this));

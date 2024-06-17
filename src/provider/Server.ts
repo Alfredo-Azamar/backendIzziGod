@@ -43,6 +43,7 @@ class Server{
         
     }
 
+    // Loads routes from the provided controllers into the express application
     private loadRoutes(controllers:AbstractController[]):void{
         this.app.get('/',(req:Request,res:Response)=>{
             res.status(200).send('Hello world');
@@ -59,16 +60,19 @@ class Server{
         })
     }
 
+    // Loads middleware into the express application
     private async connectDB(){
         await db.sequelize.sync({force:false});
     }
 
+    // Connects to the database
     public init(){
         this.server.listen(this.port,()=>{
             console.log(`Server running on port ${this.port}`);
         })       
     }
 
+    // Sets up Socket.IO event listeners for handling client connections and disconnections
     private setupSocketIO() {
         this.io.on('connection', (socket: socketIo.Socket) => {
             console.log('A user connected');

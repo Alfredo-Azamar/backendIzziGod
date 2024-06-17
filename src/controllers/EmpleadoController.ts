@@ -44,7 +44,7 @@ class EmpleadoController extends AbstractController {
 
     // Calls and statistics routes
     this.router.post("/EMERGENCIA", this.postEmergency.bind(this));
-    this.router.get("/agentesActivos", this.getActiveAgents.bind(this));
+    this.router.get("/agentesActivos", this.authMiddleware.verifyToken, this.getActiveAgents.bind(this));
     this.router.get("/consultarLlamadasEmpleado/:id", this.getEmployeeCalls.bind(this));
     this.router.get("/getAgenteMasLlamadasDia/:date", this.getMaxCalls.bind(this));
     this.router.get("/getAgenteMejorCalifMes/:date",this.getAgentBestScore.bind(this));
