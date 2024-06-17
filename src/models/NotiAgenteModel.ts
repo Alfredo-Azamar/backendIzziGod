@@ -1,18 +1,27 @@
-import { Model, Sequelize } from "sequelize";
+// Authors:
+// * Alfredo Azamar López - A01798100
+// * Karla Stefania Cruz Muñiz - A01661547
+// * Abner Maximiliano Lecona Nieves - A01753179
 
+// {IMPORTS}
+import { Model } from "sequelize";
+
+// Interface for the NotiAgente model
 interface NotiAgenteAttributes {
     IdNotificacion: number;
     IdEmpleado: string;
 }
-
+// Define the NotiAgente model, for the Sequelize ORM, representing a notification for an agent in the database
 module.exports = (sequelize: any, DataTypes: any) => {
     class NotiAgente
         extends Model<NotiAgenteAttributes>
         implements NotiAgenteAttributes
     {
+        // Attributes are enforced by the NotiAgenteAttributes interface
         public IdNotificacion!: number;
         public IdEmpleado!: string;
 
+        // Associates the NotiAgente model with other models
         static associate(models: any) {
             NotiAgente.belongsTo(models.Notificacion, {
                 foreignKey: "IdNotificacion",
@@ -24,6 +33,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
             });
         }
     }
+    // Initializes the NotiAgente model with its attributes and options
     NotiAgente.init(
         {
             IdNotificacion: {
@@ -39,8 +49,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
         },
         {
             sequelize,
-            modelName: "NotiAgente",
+            modelName: "NotiAgente", // Name of the model
         }
     );
+    
     return NotiAgente;
 };
