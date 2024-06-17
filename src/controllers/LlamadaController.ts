@@ -380,9 +380,7 @@ class LlamadaController extends AbstractController {
   // Retrieves detailed information about call records for each agent
   private async getInfoCallCards(req: Request, res: Response) {
     try {
-      // Executes a SQL query to fetch the required information
-      const llamadas = await db.sequelize.query(
-        `
+      const llamadas = await db.sequelize.query(`
       SELECT
           L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
           Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
@@ -403,9 +401,7 @@ class LlamadaController extends AbstractController {
       LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
       WHERE Empleado.Rol = 'agente'
       ORDER BY Empleado.Nombre;
-      `,
-        { type: db.sequelize.QueryTypes.SELECT }
-      );
+      `, { type: db.sequelize.QueryTypes.SELECT });
 
       res.status(200).json(llamadas);
     } catch (err) {
