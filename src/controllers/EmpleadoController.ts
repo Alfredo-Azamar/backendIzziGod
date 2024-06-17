@@ -30,26 +30,26 @@ class EmpleadoController extends AbstractController {
     this.router.get("/test", this.getTest.bind(this));
 
     // Employee routes
-    this.router.post("/crearEmpleado", this.postEmployee.bind(this));
-    this.router.get("/consutarEmpleado/:id", this.getSpecificEmployee.bind(this));
-    this.router.get("/consultarEmpleados", this.getAllEmployees.bind(this));
+    this.router.post("/crearEmpleado", this.authMiddleware.verifyToken, this.postEmployee.bind(this));
+    this.router.get("/consutarEmpleado/:id", this.authMiddleware.verifyToken, this.getSpecificEmployee.bind(this));
+    this.router.get("/consultarEmpleados", this.authMiddleware.verifyToken, this.getAllEmployees.bind(this));
 
     // Average and leaderboard routes
-    this.router.get("/califPromDia/:id/calificaciones/:date",this.getAvgScoreDate.bind(this));
-    this.router.get("/calificacionPromedio/:id", this.getAvgScore.bind(this));
-    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getAvgCallPerEmployee.bind(this));
-    this.router.get("/getCalifPromDiaAgentes/:date", this.getAvgScoreEmployee.bind(this));
-    this.router.get("/getPromedioTiempoLlamada/:id", this.getAvgCallDuration.bind(this));
-    this.router.get("/leaderboardCalificacionesDia/:date/:idEmpleado", this.getLeaderboardScore.bind(this));
+    this.router.get("/califPromDia/:id/calificaciones/:date", this.authMiddleware.verifyToken, this.getAvgScoreDate.bind(this));
+    this.router.get("/calificacionPromedio/:id", this.authMiddleware.verifyToken, this.getAvgScore.bind(this));
+    this.router.get("/consultarPromLlamadasEmpleado/:id", this.authMiddleware.verifyToken, this.getAvgCallPerEmployee.bind(this));
+    this.router.get("/getCalifPromDiaAgentes/:date", this.authMiddleware.verifyToken, this.getAvgScoreEmployee.bind(this));
+    this.router.get("/getPromedioTiempoLlamada/:id", this.authMiddleware.verifyToken, this.getAvgCallDuration.bind(this));
+    this.router.get("/leaderboardCalificacionesDia/:date/:idEmpleado", this.authMiddleware.verifyToken, this.getLeaderboardScore.bind(this));
 
     // Calls and statistics routes
-    this.router.post("/EMERGENCIA", this.postEmergency.bind(this));
+    this.router.post("/EMERGENCIA", this.authMiddleware.verifyToken, this.postEmergency.bind(this));
     this.router.get("/agentesActivos", this.authMiddleware.verifyToken, this.getActiveAgents.bind(this));
-    this.router.get("/consultarLlamadasEmpleado/:id", this.getEmployeeCalls.bind(this));
-    this.router.get("/getAgenteMasLlamadasDia/:date", this.getMaxCalls.bind(this));
-    this.router.get("/getAgenteMejorCalifMes/:date",this.getAgentBestScore.bind(this));
-    this.router.get("/llamadasDiaHoyEmpleado/:id/:date", this.getEmployeeCallsDate.bind(this));
-    this.router.get("/leaderboardLlamadasDia/:date/:idEmpleado", this.getLeaderboardCalls.bind(this));
+    this.router.get("/consultarLlamadasEmpleado/:id", this.authMiddleware.verifyToken, this.getEmployeeCalls.bind(this));
+    this.router.get("/getAgenteMasLlamadasDia/:date", this.authMiddleware.verifyToken, this.getMaxCalls.bind(this));
+    this.router.get("/getAgenteMejorCalifMes/:date", this.authMiddleware.verifyToken, this.getAgentBestScore.bind(this));
+    this.router.get("/llamadasDiaHoyEmpleado/:id/:date",this.authMiddleware.verifyToken, this.getEmployeeCallsDate.bind(this));
+    this.router.get("/leaderboardLlamadasDia/:date/:idEmpleado", this.authMiddleware.verifyToken, this.getLeaderboardCalls.bind(this));
 
     // Aditional stats routes
     this.router.get("/duracionPromMeses/:IdEmpleado",this.getAvgCallDurationMonth.bind(this));

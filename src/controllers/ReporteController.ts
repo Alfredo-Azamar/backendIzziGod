@@ -24,11 +24,11 @@ class ReporteController extends AbstractController {
   protected initRoutes(): void {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
-    this.router.post("/crearReportePersonal", this.postPersonalReport.bind(this)); // DOUBT
-    this.router.post("/crearReporte", this.postReport.bind(this));
-    this.router.get("/consultarReportes", this.getReports.bind(this));
-    this.router.get("/consultarReportesPersonal/:phoneNum", this.getPersonalReport.bind(this));
-    this.router.get("/reportesCliente/:id", this.getCustomerReport.bind(this));
+    this.router.post("/crearReportePersonal", this.authMiddleware.verifyToken, this.postPersonalReport.bind(this)); // DOUBT
+    this.router.post("/crearReporte", this.authMiddleware.verifyToken, this.postReport.bind(this));
+    this.router.get("/consultarReportes", this.authMiddleware.verifyToken, this.getReports.bind(this));
+    this.router.get("/consultarReportesPersonal/:phoneNum", this.authMiddleware.verifyToken, this.getPersonalReport.bind(this));
+    this.router.get("/reportesCliente/:id", this.authMiddleware.verifyToken, this.getCustomerReport.bind(this));
   }
 
   // Test endpoint

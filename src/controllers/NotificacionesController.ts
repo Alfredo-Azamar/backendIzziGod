@@ -31,11 +31,11 @@ class ReporteController extends AbstractController {
 
     this.router.post("/crearNotificacionAgente", this.authMiddleware.verifyToken, this.postAgentNotification.bind(this)); 
 
-    this.router.delete("/eliminarNotificacion/:idNoti/:idAgente", this.deleteNotificacion.bind(this));
+    this.router.delete("/eliminarNotificacion/:idNoti/:idAgente", this.authMiddleware.verifyToken, this.deleteNotificacion.bind(this));
 
-    this.router.get("/getNotificaciones", this.getNotification.bind(this));
+    this.router.get("/getNotificaciones", this.authMiddleware.verifyToken, this.getNotification.bind(this));
 
-    this.router.get("/getNotificacionAgente/:id", this.getAgentNotification.bind(this));
+    this.router.get("/getNotificacionAgente/:id", this.authMiddleware.verifyToken, this.getAgentNotification.bind(this));
   }
 
   // Test endpoint

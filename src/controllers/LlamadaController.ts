@@ -28,19 +28,19 @@ class LlamadaController extends AbstractController {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
 
-    this.router.post("/crearEncuesta", this.postSurvey.bind(this));
-    this.router.post("/crearIncidencia", this.postIncident.bind(this));
-    this.router.post("/crearLlamada", this.postNewCall.bind(this));
+    this.router.post("/crearEncuesta", this.authMiddleware.verifyToken, this.postSurvey.bind(this));
+    this.router.post("/crearIncidencia", this.authMiddleware.verifyToken, this.postIncident.bind(this));
+    this.router.post("/crearLlamada", this.authMiddleware.verifyToken, this.postNewCall.bind(this));
     this.router.get("/averageCallDuration", this.authMiddleware.verifyToken, this.getAverageCallDuration.bind(this));
     this.router.get("/averageCallTime/:id", this.authMiddleware.verifyToken, this.averageCallTime.bind(this));
-    this.router.get("/consultarLlamadas", this.getAllCalls.bind(this));
-    this.router.get("/consultarSolucion/:asunto", this.getSolution.bind(this));
-    this.router.get("/consultarSoluciones", this.getAllSolutions.bind(this));
+    this.router.get("/consultarLlamadas", this.authMiddleware.verifyToken, this.getAllCalls.bind(this));
+    this.router.get("/consultarSolucion/:asunto", this.authMiddleware.verifyToken, this.getSolution.bind(this));
+    this.router.get("/consultarSoluciones", this.authMiddleware.verifyToken, this.getAllSolutions.bind(this));
     this.router.get("/emocionesPorDiaAgente/:id", this.authMiddleware.verifyToken, this.getEmotionPerAgent.bind(this));
     this.router.get("/infoIncidencias", this.authMiddleware.verifyToken, this.getInfoIncidents.bind(this));
     this.router.get("/infoTarjetas", this.authMiddleware.verifyToken, this.getInfoCallCards.bind(this));
     this.router.get("/llamadasArribaDelTiempo/:duracion", this.authMiddleware.verifyToken, this.getCallAboveTime.bind(this));
-    this.router.get("/llamadasDeHoy", this.getTodaysCalls.bind(this));
+    this.router.get("/llamadasDeHoy", this.authMiddleware.verifyToken, this.getTodaysCalls.bind(this));
     this.router.get("/llamadasPorDia", this.authMiddleware.verifyToken, this.getCallsPerDay.bind(this));
     this.router.get("/llamadasPorHoras", this.authMiddleware.verifyToken, this.getCallsPerHour.bind(this));
     this.router.get("/negativeCallsCount", this.authMiddleware.verifyToken, this.getNegativeCallsCount.bind(this));
@@ -49,10 +49,10 @@ class LlamadaController extends AbstractController {
     this.router.get("/tipoEmocionPorDia", this.authMiddleware.verifyToken, this.getEmotionsPerDay.bind(this));
     this.router.get("/topAgents/:num", this.authMiddleware.verifyToken, this.getTopAgents.bind(this));
     this.router.get("/topPeoresAgentes/:num", this.authMiddleware.verifyToken, this.getWorstAgents.bind(this));
-    this.router.put("/cambiarSentiment", this.putChangeCallSentiment.bind(this));
-    this.router.put("/actualizarLlamada", this.putCallDetails.bind(this));
-    this.router.put("/actualizarLlamadaFinalizada",this.putEndingCallDetails.bind(this));
-    this.router.put("/solucionLlamada", this.putCallSolution.bind(this));
+    this.router.put("/cambiarSentiment", this.authMiddleware.verifyToken, this.putChangeCallSentiment.bind(this));
+    this.router.put("/actualizarLlamada", this.authMiddleware.verifyToken, this.putCallDetails.bind(this));
+    this.router.put("/actualizarLlamadaFinalizada", this.authMiddleware.verifyToken, this.putEndingCallDetails.bind(this));
+    this.router.put("/solucionLlamada", this.authMiddleware.verifyToken, this.putCallSolution.bind(this));
   }
 
   // Test endpoint

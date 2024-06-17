@@ -26,11 +26,11 @@ class ClienteController extends AbstractController {
   protected initRoutes(): void {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
-    this.router.post("/crearCliente", this.postCustomer.bind(this));
-    this.router.post("/crearContrato", this.postCustomerContract.bind(this));
-    this.router.get("/consultarCliente/:phoneNum",this.getSpecificCustomerInfo.bind(this));
-    this.router.get("/consultarClientes", this.getCustomersInfo.bind(this));
-    this.router.get("/consultarContrato", this.getCustomerContract.bind(this));
+    this.router.post("/crearCliente", this.authMiddleware.verifyToken, this.postCustomer.bind(this));
+    this.router.post("/crearContrato", this.authMiddleware.verifyToken, this.postCustomerContract.bind(this));
+    this.router.get("/consultarCliente/:phoneNum", this.authMiddleware.verifyToken, this.getSpecificCustomerInfo.bind(this));
+    this.router.get("/consultarClientes", this.authMiddleware.verifyToken, this.getCustomersInfo.bind(this));
+    this.router.get("/consultarContrato", this.authMiddleware.verifyToken, this.getCustomerContract.bind(this));
     this.router.get("/paquetesPorCliente/:phoneNum", this.authMiddleware.verifyToken, this.getPackageCustomer.bind(this));
     this.router.get("/telefonoPorZona/:zoneName", this.authMiddleware.verifyToken, this.getPhoneByZone.bind(this));
   }
