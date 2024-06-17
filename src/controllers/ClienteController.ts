@@ -1,174 +1,241 @@
-import { Request,Response } from "express";
+// Authors:
+// * Alfredo Azamar López - A01798100
+// * José Antonio Moreno Tahuilan - A01747922
+// * Abner Maximiliano Lecona Nieves - A01753179
+
+// {IMPORTS}
+import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
+import moment from "moment-timezone";
 
+// Define the ClienteController class
 class ClienteController extends AbstractController {
-    // Singleton
-    // Atributo de clase
-    private static _instance: ClienteController;
-    // Método de clase
-    public static get instance():AbstractController{
-        if(!this._instance){
-            this._instance = new ClienteController("cliente");
-        }
-        return this._instance;
+  // Singleton
+  // Class attribute
+  private static _instance: ClienteController;
+  // Class Method
+  public static get instance(): AbstractController {
+    if (!this._instance) {
+      this._instance = new ClienteController("cliente");
     }
-    // Declarar todas las rutas del controlador
-    protected initRoutes(): void {
-        this.router.get('/test', this.getTest.bind(this));
-        this.router.get('/consultarClientes', this.getConsultarClientes.bind(this));
-        this.router.post('/crearCliente', this.postCrearCliente.bind(this));
-        this.router.get('/consultarContrato', this.getConsultarContrato.bind(this));
-        this.router.post('/crearContrato', this.postCrearContrato.bind(this));
-        this.router.get('/consultarCliente/:celular', this.getConsultarCliente.bind(this));
-        this.router.get('/telefonoPorZona/:nombreZona', this.getTelefonoPorZona.bind(this));
-        this.router.get('/paquetesPorCliente/:celular', this.getPaquetesPorCliente.bind(this)); 
+    return this._instance;
+  }
+
+  // Define all the endpoints of the controller "ClienteController"
+  protected initRoutes(): void {
+    this.router.get("/test", this.getTest.bind(this));
+    this.router.post("/crearCliente", this.postCustomer.bind(this));
+    this.router.post("/crearContrato", this.postCustomerContract.bind(this));
+    this.router.get("/consultarCliente/:phoneNum",this.getSpecificCustomerInfo.bind(this));
+    this.router.get("/consultarClientes", this.getCustomersInfo.bind(this));
+    this.router.get("/consultarContrato", this.getCustomerContract.bind(this));
+    this.router.get("/paquetesPorCliente/:phoneNum",this.getPackageCustomer.bind(this));
+    this.router.get("/telefonoPorZona/:zoneName",this.getPhoneByZone.bind(this));
+  }
+
+  // Test endpoint
+  private getTest(req: Request, res: Response) {
+    try {
+      console.log("Prueba exitosa");
+      res.status(200).send("<h1>Prueba exitosa</h1>");
+
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
     }
+  }
 
+  // Creates a new client
+  private async postCustomer(req: Request, res: Response) {
+    try {
+      // Insert the new client
+      await db.Cliente.create(req.body);
 
-    private async getPaquetesPorCliente(req: Request, res: Response) {
-        try {
-            const { celular } = req.params;
-            const llamadas = await db.sequelize.query(
-                `SELECT Nombre, Precio, Fecha
-                FROM Contrato AS C
-                JOIN Paquete AS P ON C.IdPaquete = P.IdPaquete
-                WHERE C.Celular = '${celular}'`,
-                { type: db.sequelize.QueryTypes.SELECT });
+      console.log("Cliente creado");
+      res.status(201).send("<h1>Cliente creado</h1>");
 
-            res.status(200).json(llamadas);
-        } catch(err) {
-            console.log(err)
-            res.status(500).send('Internal server error '+err)
-        }
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
     }
-    
+  }
 
-    private async getConsultarCliente(req: Request, res: Response) { //MAX
-        try {
-            const { celular } = req.params; 
+  // Creates a new contract
+  private async postCustomerContract(req: Request, res: Response) {
+    try {
+      const {Celular, IdPaquete} = req.body;
+      // Get the current date and time
+      const FechaHora = moment().tz("America/Mexico_City").format();
+      const subFechaHora = FechaHora.substring(0, 10); 
+      
+      // Insert the new contract
+      await db.sequelize.query(`
+        INSERT INTO Contrato(Fecha, Celular, IdPaquete)
+        VALUES('${subFechaHora}', '${Celular}', '${IdPaquete}');
+        `);
 
-            const cliente = await db.Cliente.findOne({
-                where: { Celular: celular },
-                attributes: ['Celular', 'Nombre', 'ApellidoP', 'ApellidoM','Sexo','Correo', 'FechaNac', 'IdZona']
-            });
+      console.log("Contrato creado");
+      res.status(201).send("<h1>Contrato creado</h1>");
 
-            if (!cliente) {
-                res.status(404).send('Cliente not found');
-                return;
-            }
-            //Comment on tables visited
-            const zona = await db.Zona.findOne({
-                where: { IdZona: cliente.IdZona },
-                attributes: ['Nombre']
-            });
-
-            const contratos = await db.Contrato.findAll({
-                where: { Celular: celular } ,
-                attributes: ['IdPaquete']
-            });
-
-            const paquetes = await db.Paquete.findAll({
-                where: { IdPaquete: contratos.map((c:any) => c.IdPaquete) },
-                attributes: ['Nombre']
-            });
-
-            const paquetesInfo = paquetes.map((paquete: any) => ({
-                Nombre: paquete.Nombre,
-            }));
-
-            res.status(200).json({ 
-                ...cliente.toJSON(), 
-                Zona: zona.Nombre, 
-                Paquetes: paquetesInfo 
-            });
-
-
-        } catch(error:any) {
-            console.log(error);
-            res.status(500).send('Internal server error'+error);
-        }
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error" + err);
     }
+  }
 
-    private getTest(req: Request,res: Response){
-        try{
-            console.log("Prueba exitosa");
-            res.status(200).send("<h1>Prueba exitosa</h1>")
-        }catch(error:any){
-            console.log(error);
-            res.status(500).send('Internal server error'+error);
-        }
+  // Fetches a client"s details by their phone number
+  private async getSpecificCustomerInfo(req: Request, res: Response) {
+    try {
+      const { phoneNum } = req.params;
+
+      // Find a single client by their phone number
+      const cliente = await db.Cliente.findOne({
+        where: { Celular: phoneNum },
+        attributes: [
+          "Celular",
+          "Nombre",
+          "ApellidoP",
+          "ApellidoM",
+          "Sexo",
+          "Correo",
+          "FechaNac",
+          "IdZona",
+        ],
+      });
+
+      if (!cliente) {
+        res.status(404).send("Cliente not found");
+        return;
+      }
+
+      // Find the zone of the client
+      const zona = await db.Zona.findOne({
+        where: { IdZona: cliente.IdZona },
+        attributes: ["Nombre"],
+      });
+
+      // Find all contracts for the client
+      const contratos = await db.Contrato.findAll({
+        where: { Celular: phoneNum },
+        attributes: ["IdPaquete"],
+      });
+
+      // Find all packages for the client
+      const paquetes = await db.Paquete.findAll({
+        where: { IdPaquete: contratos.map((c: any) => c.IdPaquete) },
+        attributes: ["Nombre"],
+      });
+
+      // Extract only the package names
+      const paquetesInfo = paquetes.map((paquete: any) => ({
+        Nombre: paquete.Nombre,
+      }));
+
+      // Send the response
+      res.status(200).json({
+        ...cliente.toJSON(),
+        Zona: zona.Nombre,
+        Paquetes: paquetesInfo,
+      });
+
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
     }
+  }
 
-    private async getConsultarClientes(req: Request, res: Response) {
-        try{
-            let clientes = await db["Cliente"].findAll();
-            res.status(200).json(clientes);
-        } catch(err) {
-            console.log(err)
-            res.status(500).send('Internal server error '+err)
-        }
+  // Retrieves all clients
+  private async getCustomersInfo(req: Request, res: Response) {
+    try {
+      // Fetch all clients from the database
+      let clientes = await db["Cliente"].findAll();
+
+      res.status(200).json(clientes);
+
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error " + err);
     }
+  }
 
-    private async getTelefonoPorZona(req: Request, res: Response) {
-        try{
-            let { nombreZona } = req.params;
+  // Retrieves a new contract
+  private async getCustomerContract(req: Request, res: Response) {
+    try {
+      // Fetch all contracts from the database
+      let contratos = await db["Contrato"].findAll();
 
-            let zona = await db.Zona.findOne({
-                where: { nombre: nombreZona }
-            });
+      res.status(200).json(contratos);
 
-            if (!zona) {
-                res.status(404).send('Zona not found');
-                return;
-            }
-
-            let telefonos = await db.Cliente.findAll({
-                where: { IdZona: zona.IdZona },
-                attributes: ['Celular']
-            });
-            res.status(200).json(telefonos);
-        } catch(err) {
-            console.log(err)
-            res.status(500).send('Internal server error '+err)
-        }
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error " + err);
     }
+  }
 
-    
+  // Retrieves packages for a given client
+  private async getPackageCustomer(req: Request, res: Response) {
+    try {
+      const { phoneNum } = req.params;
 
-    private async postCrearCliente(req: Request,res: Response){
-        try{
-            console.log(req.body);
-            await db.Cliente.create(req.body);
-            console.log("Cliente creado");
-            res.status(200).send("<h1>Cliente creado</h1>");
-        }catch(err){
-            console.log(err);
-            res.status(500).send('Internal server error'+err);
-        }
+      // Find all packages for the client
+      const packages = await db.Contrato.findAll({
+        include: [
+          {
+            model: db.Paquete,
+            as: "Paquete",
+            attributes: ["Nombre", "Precio"],
+          },
+        ],
+        where: { Celular: phoneNum },
+        attributes: ["Fecha"],
+      });
+
+      // Formatting the response
+      const formattedResponse = packages.map(
+        (coso: { Paquete: { Nombre: any; Precio: any }; Fecha: any }) => ({
+          Nombre: coso.Paquete.Nombre,
+          Precio: coso.Paquete.Precio,
+          Fecha: coso.Fecha,
+        })
+      );
+
+      res.status(200).json(formattedResponse);
+
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error " + err);
     }
+  }
 
-    private async getConsultarContrato(req: Request, res: Response) {
-        try{
-            let contratos = await db["Contrato"].findAll();
-            res.status(200).json(contratos);
-        } catch(err) {
-            console.log(err)
-            res.status(500).send('Internal server error '+err)
-        }
-    }
+  // Retrieves all phone numbers for a given zone
+  private async getPhoneByZone(req: Request, res: Response) {
+    try {
+      let { zoneName } = req.params;
 
-    private async postCrearContrato(req: Request,res: Response){
-        try{
-            console.log(req.body);
-            await db.Contrato.create(req.body); //Insert
-            console.log("Contrato creado");
-            res.status(200).send("<h1>Contrato creado</h1>");
-        }catch(err){
-            console.log(err);
-            res.status(500).send('Internal server error'+err);
-        }
+      // Find the zone by its name
+      let zona = await db.Zona.findOne({
+        where: { nombre: zoneName },
+      });
+
+      if (!zona) {
+        res.status(404).send("Zona not found");
+        return;
+      }
+
+      // Fetch client"s phone numbers in the specified zone
+      let telefonos = await db.Cliente.findAll({
+        where: { IdZona: zona.IdZona },
+        attributes: ["Celular"],
+      });
+
+      res.status(200).json(telefonos);
+
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal server error " + err);
     }
+  }
 }
 
 export default ClienteController;

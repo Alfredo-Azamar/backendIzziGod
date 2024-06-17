@@ -1,3 +1,6 @@
+// Author: Víctor Adrián Sosa Hernández
+
+// {IMPORTS}
 import {Router} from 'express';
 import AuthMiddleware from '../middlewares/authorization';
 import CognitoService from '../services/cognitoService';
@@ -26,7 +29,7 @@ export default abstract class AbstractController{
         this._prefix = prefix;
         this.initRoutes();
     }
-    //Inicializar las rutas
+    // Initialize endpoints
     protected abstract initRoutes(): void;
 
 }
