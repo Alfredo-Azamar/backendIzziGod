@@ -1,43 +1,80 @@
+// Authors:
+// * Alfredo Azamar López - A01798100
+// * Abner Maximiliano Lecona Nieves - A01753179
+
+// {IMPORTS}
 import { Request, Response } from "express";
 import AbstractController from "./AbstractController";
 import db from "../models";
-import { Op, where } from "sequelize";
+import { Op } from "sequelize";
 import moment from 'moment-timezone';
 
+// Define the NotificacionesController class
 class ReporteController extends AbstractController {
-  //Singleton
-  //Class attribute
+  // Singleton
+  // Class attribute
   private static _instance: ReporteController;
-  //Class Method
+  // Class Method
   public static get instance(): AbstractController {
     if (!this._instance) {
       this._instance = new ReporteController("notificacion");
     }
     return this._instance;
   }
-  //Routes controller declaration
+
+  // Define all the endpoints of the controller "NotificacionesController"
   protected initRoutes(): void {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
 
-    //Create global notification
-    this.router.post("/crearNotificacion", this.postCrearNotificacion.bind(this)); 
+    this.router.post("/crearNotificacion", this.postGlobalNotification.bind(this)); 
 
-    //Create notification for a specific agent
-    this.router.post("/crearNotificacionAgente", this.postCrearNotificacionAgente.bind(this)); 
+    this.router.post("/crearNotificacionAgente", this.postAgentNotification.bind(this)); 
 
-    // Delete notification
     this.router.delete("/eliminarNotificacion/:idNoti/:idAgente", this.deleteNotificacion.bind(this));
 
-    // Get all notifications
-    this.router.get("/getNotificaciones", this.getNotificaciones.bind(this));
+    this.router.get("/getNotificaciones", this.getNotification.bind(this));
 
-    // Get all notifications for a specific agent
-    this.router.get("/getNotificacionAgente/:id", this.getNotificacionAgente.bind(this));
+    this.router.get("/getNotificacionAgente/:id", this.getAgentNotification.bind(this));
   }
 
+  // Test endpoint
+  private getTest(req: Request, res: Response) {
+    try {
+      console.log("Prueba exitosa :)");
+      res.status(200).send("<h1>Prueba exitosa</h1>");
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send("Internal server error" + error);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // Get all notifications for a specific agent
-  private async getNotificacionAgente(req: Request, res: Response) {
+  private async getAgentNotification(req: Request, res: Response) {
     try {
       const { id } = req.params;
 
@@ -63,7 +100,7 @@ class ReporteController extends AbstractController {
   }
 
   // Get all notifications
-  private async getNotificaciones(req: Request, res: Response) {
+  private async getNotification(req: Request, res: Response) {
     try {
       const notificaciones = await db.Notificacion.findAll();
       res.status(200).json(notificaciones);
@@ -77,7 +114,8 @@ class ReporteController extends AbstractController {
   private async deleteNotificacion(req: Request, res: Response) {
     try {
       const {idNoti, idAgente} = req.params;
-      // await db.Notificacion.destroy({where:{IdNotificacion:idNoti}});
+
+      // Delete the notification from the agent
       await db.NotiAgente.destroy(
         {
           where:{
@@ -95,9 +133,11 @@ class ReporteController extends AbstractController {
 
 
   // Create notification for a specific agent
-  private async postCrearNotificacionAgente(req: Request, res: Response) {
+  private async postAgentNotification(req: Request, res: Response) {
     try {
       const {Titulo, Descripcion, IdEmpleado} = req.body;
+      
+      // Get the current date and time
       const FechaHora = moment().tz("America/Mexico_City").format();
       const subFechaHora = FechaHora.substring(0, 19);
       
@@ -157,14 +197,14 @@ class ReporteController extends AbstractController {
   }
 
   // Create global notification
-  private async postCrearNotificacion(req: Request, res: Response) {
+  private async postGlobalNotification(req: Request, res: Response) {
     try {
       // Creates new notification
       const {Titulo, Descripcion} = req.body;
+
+      // Get the current date and time
       const FechaHora = moment().tz("America/Mexico_City").format();
       const subFechaHora = FechaHora.substring(0, 19); 
-
-      console.log(subFechaHora);
 
       // Inster new notification
       const newNoti = await db.sequelize.query(`
@@ -209,16 +249,6 @@ class ReporteController extends AbstractController {
     }
   }
 
-  // Test route
-  private getTest(req: Request, res: Response) {
-    try {
-      console.log("Prueba exitosa :)");
-      res.status(200).send("<h1>Prueba exitosa</h1>");
-    } catch (error: any) {
-      console.log(error);
-      res.status(500).send("Internal server error" + error);
-    }
-  }
 }
 
 export default ReporteController;

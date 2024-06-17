@@ -1,5 +1,12 @@
-import { Model, Sequelize } from "sequelize";
+// Authors:
+// * Alfredo Azamar López - A01798100
+// * Karla Stefania Cruz Muñiz - A01661547
+// * José Antonio Moreno Tahuilan - A01747922
 
+// {IMPORTS}
+import { Model } from "sequelize";
+
+// Enum for the sentiment attribute
 enum SentimentEnum{
   Inactivo = "inactivo",
   Mixed = "mixed",
@@ -8,6 +15,7 @@ enum SentimentEnum{
   Positive = "positive",
 }
 
+// Enum for the subject of the call attribute
 enum AsuntoEnum{
   Ventas = "ventas",
   Internet = "internet",
@@ -16,6 +24,7 @@ enum AsuntoEnum{
   Soporte = "soporte",
 }
 
+// Interface for the Llamada model
 interface LlamadaAttributes {
   IdLlamada: string;
   FechaHora: string;
@@ -26,11 +35,13 @@ interface LlamadaAttributes {
   Asunto: AsuntoEnum;
 }
 
+// Define the Llamada model, for the Sequelize ORM, representing a call in the database
 module.exports = (sequelize: any, DataTypes: any) => {
   class Llamada
     extends Model<LlamadaAttributes>
     implements LlamadaAttributes
   {
+    // Attributes are enforced by the LlamadaAttributes interface
     public IdLlamada!: string;
     public FechaHora!: string;
     public Notas!: string;
@@ -39,6 +50,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     public Sentiment!: SentimentEnum;
     public Asunto!: AsuntoEnum;
 
+    // Associates the Llamada model with other models
     static associate(models: any) {
       Llamada.belongsTo(models.Empleado, {
         foreignKey: "IdEmpleado",
@@ -58,6 +70,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
       });
     }
   }
+
+  // Initializes the Llamada model with its attributes and options
   Llamada.init(
     {
       IdLlamada: {
@@ -95,7 +109,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     },
     {
       sequelize,
-      modelName: "Llamada",
+      modelName: "Llamada", // Name of the model
     }
   );
   return Llamada;

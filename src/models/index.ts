@@ -15,13 +15,13 @@ if(env==='development')
     dialect: 'mysql',
     host: config.development.host,
     define:{
-      //Evitar que nos ponga createdAT y updatedAt
+      // Prevent it from giving us createdAT and updatedAt
       timestamps: false,
-      //Evitar que agregue una s al final
+      // Prevent adding an s to the end
       freezeTableName: true
     }
   });
-//Cargar los modelos de base de datos
+// Load the database models
 
 fs
   .readdirSync(__dirname)
@@ -35,7 +35,7 @@ fs
     db[model.name] = model;
   });
 
-//Generar las relaciones entre las tablas
+// Generate relationships between tables
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
@@ -43,7 +43,7 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
-db.sequelize = sequelize; // Objeto de conexión
-db.Sequelize = Sequelize; // La biblioteca
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
 export default db;

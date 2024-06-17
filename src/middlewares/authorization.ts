@@ -1,10 +1,15 @@
+// Author: Víctor Adrián Sosa Hernández
+
+// {IMPORTS}
 import { Response, Request, NextFunction } from "express";
 import { AWS_REGION, COGNITO_POOL_ID } from "../config";
 import jwt from "jsonwebtoken";
 import jwkToPem from "jwk-to-pem";
 
-
+// A dictionary to store PEMs with their corresponding KID as the key
 const pems: { [key: string]: string } = {};
+
+// Middleware for authenticating requests using JWT tokens with AWS Cognito
 class AuthMiddleware {
   private poolRegion = AWS_REGION;
   private userPoolId = COGNITO_POOL_ID;
@@ -19,17 +24,16 @@ class AuthMiddleware {
     this.getAWSCognitoPems();
   }
 
+  // Middleware function to verify the JWT token in the request
   public verifyToken(req: Request, res: Response, next: NextFunction) {
     if (req.headers.authorization) {
       const token = req.headers.authorization.replace("Bearer ", "");
       const decodedJWT: any = jwt.decode(token, { complete: true });
       if (!decodedJWT) {
-        return res
-          .status(401)
-          .send({
-            code: "InvalidTokenException",
-            message: "The token is no valid",
-          });
+        return res.status(401).send({
+          code: "InvalidTokenException",
+          message: "The token is no valid",
+        });
       }
       const kid = decodedJWT.header.kid;
       if (kid !== undefined) {
@@ -39,35 +43,30 @@ class AuthMiddleware {
         const pem = pems[kid];
         jwt.verify(token, pem, { algorithms: ["RS256"] }, function (err: any) {
           if (err) {
-            return res
-              .status(401)
-              .send({
-                code: "InvalidTokenException",
-                message: "The token is no valid",
-              });
+            return res.status(401).send({
+              code: "InvalidTokenException",
+              message: "The token is no valid",
+            });
           }
         });
         req.user = decodedJWT.payload;
         req.token = token;
         next();
       } else {
-        return res
-          .status(401)
-          .send({
-            code: "InvalidTokenException",
-            message: "The token is no valid",
-          });
+        return res.status(401).send({
+          code: "InvalidTokenException",
+          message: "The token is no valid",
+        });
       }
     } else {
-      res
-        .status(401)
-        .send({
-          code: "NoTokenFound",
-          message: "The token is not present in the request",
-        });
+      res.status(401).send({
+        code: "NoTokenFound",
+        message: "The token is not present in the request",
+      });
     }
   }
 
+  // Fetches the JSON Web Key Set (JWKS) from AWS Cognito and converts it to PEM format
   private async getAWSCognitoPems() {
     const URL = `https://cognito-idp.${this.poolRegion}.amazonaws.com/${this.userPoolId}/.well-known/jwks.json`;
     try {
