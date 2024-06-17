@@ -1,22 +1,27 @@
-//const express = require('express'); //JS
+// Author: Víctor Adrián Sosa Hernández
+
+// {IMPORTS}
 import express, {Request, Response} from 'express'; //TS
 import AbstractController from '../controllers/AbstractController';
 import db from '../models';
 import cors from 'cors';
-
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import * as socketIo from 'socket.io';
 
+/**
+ * The Server class encapsulates the setup and management of an express application,
+ * its middleware, routes, database connection, and real-time communication via Socket.IO.
+ */
 class Server{
-    //Atributos de instancia
+    // Class attribute
     private app: express.Application;
     private port: number;
     private env:string;
     private server:any;
     private io:any;
-    //Metodos de instancia
-
+    
+    // Class Method
     constructor(appInit:{port:number;env:string;middlewares:any[];controllers:AbstractController[]}){
         this.app = express();
         this.port = appInit.port;
@@ -55,7 +60,7 @@ class Server{
     }
 
     private async connectDB(){
-        await db.sequelize.sync({force:false}); //true para que borre todo antes de realizarlo
+        await db.sequelize.sync({force:false});
     }
 
     public init(){

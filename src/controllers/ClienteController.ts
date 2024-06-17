@@ -32,7 +32,7 @@ class ClienteController extends AbstractController {
     this.router.get("/consultarClientes", this.getCustomersInfo.bind(this));
     this.router.get("/consultarContrato", this.getCustomerContract.bind(this));
     this.router.get("/paquetesPorCliente/:phoneNum", this.authMiddleware.verifyToken, this.getPackageCustomer.bind(this));
-    this.router.get("/telefonoPorZona/:zoneName",this.getPhoneByZone.bind(this));
+    this.router.get("/telefonoPorZona/:zoneName", this.authMiddleware.verifyToken, this.getPhoneByZone.bind(this));
   }
 
   // Test endpoint

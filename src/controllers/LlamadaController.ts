@@ -37,7 +37,7 @@ class LlamadaController extends AbstractController {
     this.router.get("/consultarSolucion/:asunto", this.getSolution.bind(this));
     this.router.get("/consultarSoluciones", this.getAllSolutions.bind(this));
     this.router.get("/emocionesPorDiaAgente/:id", this.authMiddleware.verifyToken, this.getEmotionPerAgent.bind(this));
-    this.router.get("/infoIncidencias", this.getInfoIncidents.bind(this));
+    this.router.get("/infoIncidencias", this.authMiddleware.verifyToken, this.getInfoIncidents.bind(this));
     this.router.get("/infoTarjetas", this.authMiddleware.verifyToken, this.getInfoCallCards.bind(this));
     this.router.get("/llamadasArribaDelTiempo/:duracion", this.getCallAboveTime.bind(this));
     this.router.get("/llamadasDeHoy", this.getTodaysCalls.bind(this));

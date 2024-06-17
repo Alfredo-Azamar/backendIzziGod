@@ -64,5 +64,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
       modelName: "SolucionBase", // Name of the model
     }
   );
+  
   return SolucionBase;
 };

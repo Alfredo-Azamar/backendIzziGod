@@ -30,7 +30,7 @@ class SNSController extends AbstractController {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
     this.router.post("/add-phone-number", this.addPhoneNumber.bind(this));
-    this.router.post("/send-message", this.sendMessage.bind(this));
+    this.router.post("/send-message", this.authMiddleware.verifyToken, this.sendMessage.bind(this));
   }
 
   // Test endpoint
