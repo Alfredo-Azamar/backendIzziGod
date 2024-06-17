@@ -5,7 +5,7 @@ import { Op } from "sequelize";
 
 class EmpleadoController extends AbstractController {
   //Singleton
-  //Atributo de clase
+  //Class attribute
   private static _instance: EmpleadoController;
   //Método de clase
   public static get instance(): AbstractController {
@@ -15,60 +15,40 @@ class EmpleadoController extends AbstractController {
     return this._instance;
   }
 
-  //Declarar todas las rutas del controlador
+  //Routes controller declaration
   protected initRoutes(): void {
+    // Test route
     this.router.get("/test", this.getTest.bind(this));
-    this.router.get(
-      "/consultarEmpleados",
-      this.getConsultarEmpleados.bind(this)
-    );
-    this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));
-    this.router.get(
-      "/calificacionPromedio/:id",
-      this.getCalificacionPromedio.bind(this)
-    );
 
-    // Api para mostrar el promedio de la calificacion de las llamadas de un empleado en un día
-    // Ejemplo de petición:
-    // GET 44.209.22.101:8080/empleado/califPromDia/2/calificaciones/2023-05-21
-    this.router.get(
-      "/califPromDia/:id/calificaciones/:date",
-      this.getCalifPromDia.bind(this)
-    ); //ERROR
-    this.router.get(
-      "/consultarLlamadasEmpleado/:id",
-      this.getSumLlamadasEmpleado.bind(this)
-    );
-    this.router.get(
-      "/consutarEmpleado/:id",
-      this.getConsultarEmpleado.bind(this)
-    );
-    this.router.get(
-      "/consultarPromLlamadasEmpleado/:id",
-      this.getPromLlamadasEmpleado.bind(this)
-    );
-    this.router.get("/agentesActivos", this.agentesActivos.bind(this)); //Notificaciones
-    this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
-    this.router.get(
-      "/llamadasDiaHoyEmpleado/:id/:date",
-      this.getLlamadasDiaHoyEmpleado.bind(this)
-    );
-    this.router.get(
-      "/modaDeSentimientoEmpleado/:id",
-      this.getModaDeSentimientoEmpleado.bind(this)
-    );
-    this.router.get(
-      "/leaderboardLlamadasDia/:date/:idEmpleado",
-      this.getLeaderboardLlamadasDia.bind(this)
-    );
+    // Employee routes
+    this.router.get("/consultarEmpleados", this.getConsultarEmpleados.bind(this));
+    this.router.post("/crearEmpleado", this.postCrearEmpleado.bind(this));
+    this.router.get("/consutarEmpleado/:id", this.getConsultarEmpleado.bind(this));
+
+    // Average and leaderboard routes
+    this.router.get("/calificacionPromedio/:id", this.getCalificacionPromedio.bind(this));
+    this.router.get("/califPromDia/:id/calificaciones/:date", this.getCalifPromDia.bind(this));
+    this.router.get("/consultarPromLlamadasEmpleado/:id", this.getPromLlamadasEmpleado.bind(this));
     this.router.get("/leaderboardCalificacionesDia/:date/:idEmpleado", this.getLeaderboardCalificacionesDia.bind(this));
     this.router.get("/getPromedioTiempoLlamada/:id", this.getPromedioTiempoLlamada.bind(this));
+    this.router.get("/getCalifPromDiaAgentes/:date", this.getCalifPromDiaAgentes.bind(this));
+
+    // Calls and statistics routes
+    this.router.get("/consultarLlamadasEmpleado/:id", this.getSumLlamadasEmpleado.bind(this));
+    this.router.get("/agentesActivos", this.agentesActivos.bind(this)); 
+    this.router.post("/EMERGENCIA", this.EMERGENCIA.bind(this));
+    this.router.get("/llamadasDiaHoyEmpleado/:id/:date", this.getLlamadasDiaHoyEmpleado.bind(this));
+    this.router.get("/leaderboardLlamadasDia/:date/:idEmpleado", this.getLeaderboardLlamadasDia.bind(this));
     this.router.get("/getAgenteMejorCalifMes/:date", this.getAgenteMejorCalifMes.bind(this));
     this.router.get("/getAgenteMasLlamadasDia/:date", this.getAgenteMasLlamadasDia.bind(this));
-    this.router.get("/getCalifPromDiaAgentes/:date", this.getCalifPromDiaAgentes.bind(this));
+
+    // Aditional stats routes
+    this.router.get("/modaDeSentimientoEmpleado/:id", this.getModaDeSentimientoEmpleado.bind(this));
     this.router.get("/duracionPromMeses/:IdEmpleado", this.getDuracionPromMeses.bind(this));
+
   }
 
+  // Calculate the average duration of an employee's calls in the last 5 months
   private async getDuracionPromMeses(req: Request, res: Response) {
     try {
 
@@ -105,16 +85,17 @@ class EmpleadoController extends AbstractController {
   }
 }
 
+  // Function that calculates the average rating of employee calls in a day
   private async getCalifPromDiaAgentes(req: Request, res: Response) {
     try {
       const { date } = req.params;
   
-      // Conversión de la fecha a un formato general
+      // Converting the date to a general format
       const endDate = new Date(date);
       const startDate = new Date(date);
       startDate.setMonth(startDate.getMonth() - 1);
   
-      // Obtener todas las llamadas y las calificaciones de encuestas en el rango de fechas específico
+      // Get all calls and survey ratings in the specific date range
       const llamadasCalif = await db.Llamada.findAll({
         where: {
           FechaHora: {
@@ -141,7 +122,7 @@ class EmpleadoController extends AbstractController {
           .send("No se encontraron llamadas en el rango de fechas indicado");
       }
   
-      // Calcular el promedio de calificaciones para cada empleado por mes
+      // Calculate the grade point average for each employee per month
       const empleadoCalifs: { [key: string]: { sum: number; count: number, nombre: string, apellido: string } } = {};
   
       for (const llamada of llamadasCalif) {
@@ -157,12 +138,12 @@ class EmpleadoController extends AbstractController {
         }
       }
   
-      // Formatear los datos para la respuesta
+      // Format the data for the response
       const formattedData = Object.keys(empleadoCalifs).map(idEmpleado => {
         const { sum, count, nombre, apellido } = empleadoCalifs[idEmpleado];
         return {
           agente: `${nombre} ${apellido}`,
-          value: (sum / count).toFixed(2) // Formatear el promedio a 2 decimales
+          value: (sum / count).toFixed(2) // Format the average to 2 decimal places
         };
       });
   
@@ -173,16 +154,17 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Calculate the agent with the most calls on a specific day
   private async getAgenteMasLlamadasDia(req: Request, res: Response) {
     try {
       const { date } = req.params;
   
-      // Conversión de la fecha a un formato general
+      // Converting the date to a general format
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
   
-      // Obtener el ID del empleado con más llamadas en el día
+      // Get the ID of the employee with the most calls in the day
       const idEmpleadoLlamadas = await db.Llamada.findAll({
         where: {
           FechaHora: {
@@ -204,7 +186,7 @@ class EmpleadoController extends AbstractController {
   
       const idEmpleado = idEmpleadoLlamadas[0].IdEmpleado;
   
-      // Obtener el nombre y apellido del empleado con más llamadas
+      // Get the first and last name of the employee with the most calls
       const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: idEmpleado },
         attributes: ["Nombre", "ApellidoP"],
@@ -214,7 +196,6 @@ class EmpleadoController extends AbstractController {
         return res.status(404).send("Empleado no encontrado");
       }
 
-  
       res.status(200).json({ nombre: empleado.Nombre, apellido: empleado.ApellidoP});
     } catch (error: any) {
       console.log(error);
@@ -222,17 +203,17 @@ class EmpleadoController extends AbstractController {
     }
   }
   
-
+  // Calculate the agent with the best rating in the month
   private async getAgenteMejorCalifMes(req: Request, res: Response) {
     try {
       const { date } = req.params;
     
-      // Conversión de la fecha a un formato general
+      // Converting the date to a general format
       const endDate = new Date(date);
       const startDate = new Date(date);
       startDate.setMonth(startDate.getMonth() - 1);
     
-      // Obtener todas las llamadas y las calificaciones de encuestas en el rango de fechas específico
+      // Get all calls and survey ratings in the specific date range
       const llamadasCalif = await db.Llamada.findAll({
         where: {
           FechaHora: {
@@ -246,7 +227,7 @@ class EmpleadoController extends AbstractController {
             attributes: ["Calificacion"],
           },
           {
-            model: db.Empleado, // Suponiendo que la relación está definida en el modelo Llamada
+            model: db.Empleado, 
             as: "Empleado",
             attributes: ["Nombre", "ApellidoP"],
           }
@@ -259,9 +240,10 @@ class EmpleadoController extends AbstractController {
           .send("No se encontraron llamadas en el rango de fechas indicado");
       }
     
-      // Calcular el promedio de calificaciones para cada empleado
+      // Calculate the grade point average for each employee
       const empleadoCalifs: { [key: string]: { sum: number; count: number, nombre: string, apellido: string } } = {};
     
+      // Calculate the sum of the ratings and the number of calls for each employee
       for (const llamada of llamadasCalif) {
         if (llamada.Encuesta && llamada.Empleado) {
           const idEmpleado = llamada.IdEmpleado;
@@ -274,16 +256,17 @@ class EmpleadoController extends AbstractController {
           empleadoCalifs[idEmpleado].count += 1;
         }
       }
-    
+
+      // Calculate the average rating for each employee
       const leaderboard = Object.keys(empleadoCalifs).map((idEmpleado) => {
         const { sum, count, nombre, apellido } = empleadoCalifs[idEmpleado];
         return { idEmpleado, promedio: sum / count, nombre, apellido };
       });
     
-      // Ordenar el leaderboard por el promedio de calificaciones en orden descendente
+      // Sort the leaderboard by grade point average in descending order
       leaderboard.sort((a, b) => b.promedio - a.promedio);
     
-      // Obtener el agente con la mejor calificación
+      // Get the agent with the best rating
       const mejorAgente = leaderboard[0];
     
       if (!mejorAgente) {
@@ -297,8 +280,7 @@ class EmpleadoController extends AbstractController {
     }
   }
   
-  
-
+  // Calculate the average call time of an employee
   private async getPromedioTiempoLlamada(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -311,11 +293,11 @@ class EmpleadoController extends AbstractController {
           replacements: { id: id }
         });
   
-      // Extraer avgTime del resultado
+      // Extract avgTime from the result
       const avgTime = result[0]?.avgTime;
   
       if (avgTime !== null && avgTime !== undefined) {
-        // Convertir avgTime a minutos y segundos
+        // Convert avgTime to minutes and seconds
         const totalSeconds = Math.round(avgTime);
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
@@ -331,16 +313,17 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Calcular el leaderboard de calificaciones de encuestas de un día específico
   private async getLeaderboardCalificacionesDia(req: Request, res: Response) {
     try {
       const { date, idEmpleado } = req.params;
   
-      // Conversión de la fecha a un formato general
+      // Converting the date to a general format
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
   
-      // Obtener todas las llamadas y las calificaciones de encuestas en una fecha específica
+      // Get all calls and survey ratings on a specific date
       const llamadasCalif = await db.Llamada.findAll({
         where: {
           FechaHora: {
@@ -360,9 +343,10 @@ class EmpleadoController extends AbstractController {
           .send("No se encontraron llamadas en la fecha indicada");
       }
   
-      // Calcular el promedio de calificaciones para cada empleado
+      // Calculate the grade point average for each employee
       const empleadoCalifs: { [key: string]: { sum: number; count: number } } = {};
   
+      // Calculate the sum of the ratings and the number of calls for each employee
       for (const llamada of llamadasCalif) {
         if (llamada.Encuesta) {
           const idEmpleado = llamada.IdEmpleado;
@@ -374,20 +358,21 @@ class EmpleadoController extends AbstractController {
         }
       }
   
+      // Calculate the average rating for each employee
       const leaderboard = Object.keys(empleadoCalifs).map((idEmpleado) => {
         const { sum, count } = empleadoCalifs[idEmpleado];
         return { idEmpleado, promedio: sum / count, posicion: 0 };
       });
   
-      // Ordenar el leaderboard por el promedio de calificaciones en orden descendente
+      // Sort the leaderboard by grade point average in descending order
       leaderboard.sort((a, b) => b.promedio - a.promedio);
   
-      // Añadir la posición de cada empleado en el leaderboard
+      // Add the position of each employee on the leaderboard
       leaderboard.forEach((entry, index) => {
         entry.posicion = index + 1;
       });
   
-      // Buscar la posición del empleado específico si se proporciona el idEmpleado
+     // Find the position of the specific employee if employeeid is provided
       if (idEmpleado) {
       const empleadoPos = leaderboard.find(entry => entry.idEmpleado === idEmpleado);
       if (empleadoPos) {
@@ -404,15 +389,17 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Calculate the call leaderboard for a specific day
   private async getLeaderboardLlamadasDia(req: Request, res: Response) {
     try {
       const { date, idEmpleado } = req.params;
 
-      // Conversión de la fecha a un formato general
+      // Converting the date to a general format
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
 
+      // Get all calls on a specific date
       const idEmpleadoLlamadas = await db.Llamada.findAll({
         where: {
           FechaHora: {
@@ -422,6 +409,7 @@ class EmpleadoController extends AbstractController {
         attributes: ["IdEmpleado"],
       });
 
+      // Get the employee IDs
       const idEmpleados = idEmpleadoLlamadas.map(
         (llamada: any) => llamada.IdEmpleado
       );
@@ -441,12 +429,13 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Calcular el leaderboard de calificaciones de encuestas de un día específico
   private async calculateLeaderboard(nombres: any) {
     let leaderboard: { [key: string]: number } = {};
 
     console.log("nombres:", nombres);
 
-    // Contar las ocurrencias de cada nombre
+    //Count the occurrences of each name
     for (let i = 0; i < nombres.length; i++) {
       const nombre = nombres[i];
       if (nombre) {
@@ -460,7 +449,7 @@ class EmpleadoController extends AbstractController {
 
     console.log("leaderboard (before sorting):", leaderboard);
 
-    // Convertir el objeto leaderboard en un array de objetos JSON ordenados por el número de ocurrencias en orden descendente
+    // Convert the leaderboard object into an array of JSON objects ordered by the number of occurrences in descending order
     let sortedLeaderboard = Object.keys(leaderboard)
       .map((nombre) => ({
         nombre: nombre,
@@ -473,10 +462,12 @@ class EmpleadoController extends AbstractController {
     return sortedLeaderboard;
   }
 
+  // Calculate the mode of the sentiments of an employee's calls
   private async getModaDeSentimientoEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
 
+      // Check if the employee exists
       const empleadoId = await db.Empleado.findOne({
         where: { IdEmpleado: id },
         attributes: ["IdEmpleado"],
@@ -486,11 +477,13 @@ class EmpleadoController extends AbstractController {
         return res.status(404).send("El empleado no existe");
       }
 
+      // Get the employee's calls sentiments
       const llamadasEmpleado = await db.Llamada.findAll({
         where: { IdEmpleado: id },
         attributes: ["Sentiment"],
       });
 
+      // Extract the sentiments from the calls
       const sentimientos = llamadasEmpleado.map(
         (llamada: any) => llamada.Sentiment
       );
@@ -504,10 +497,12 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Calculate the mode of an array of strings
   private async calculateMode(sentimientos: any[]) {
     let mode = 0;
     let count = 0;
 
+    // Loop through the sentiment array
     for (let i = 0; i < sentimientos.length; i++) {
       let tempCount = 0;
       for (let j = 0; j < sentimientos.length; j++) {
@@ -524,15 +519,17 @@ class EmpleadoController extends AbstractController {
     return mode;
   }
 
+  // Function that calculates the number of calls from an employee on a specific day
   private async getLlamadasDiaHoyEmpleado(req: Request, res: Response) {
     try {
       const { id, date } = req.params;
 
-      // Conversión de la fecha a un formato general
+      // Converting the date to a general format
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
 
+      // Get the employee's calls on the specific date
       const llamadas = await db.Llamada.findAll({
         where: {
           IdEmpleado: id,
@@ -542,7 +539,7 @@ class EmpleadoController extends AbstractController {
         },
       });
 
-      // Numero de llamadas
+      // Calculate the number of calls
       const numLlamadas = llamadas.length;
 
       res.status(200).json({ value: numLlamadas });
@@ -552,12 +549,14 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Function that sends an emergency alert to the supervisor
   private async EMERGENCIA(req: Request, res: Response) {
     try {
       const { id, nombre, apellido } = req.body;
 
       const io = req.app.get("socketio");
 
+      // Flag
       if (!io) {
         return res.status(500).send("Socket.io is not initialized");
       } else {
@@ -571,6 +570,7 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Function that calculates the number of active and inactive calls of the agents
   private async agentesActivos(req: Request, res: Response) {
     try {
       const llamadas = await db.sequelize.query(
@@ -600,6 +600,7 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Function that queries an employee for their ID
   private async getConsultarEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -619,11 +620,12 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Function that calculates the average rating of an employee's calls
   private async getCalificacionPromedio(req: Request, res: Response) {
     try {
-      //Comment
       const { id } = req.params;
 
+      // Check if the employee exists
       const empleado = await db.Empleado.findOne({
         where: { IdEmpleado: id },
       });
@@ -632,21 +634,25 @@ class EmpleadoController extends AbstractController {
         return res.status(404).send("El empleado no existe");
       }
 
+      // Get the employee's calls
       const llamadasEmpleado = await db.Llamada.findAll({
         where: { IdEmpleado: id },
         attributes: ["IdLlamada"],
       });
 
+      // Calculate the employee's call GPA
       if (llamadasEmpleado && llamadasEmpleado.length > 0) {
         let sumatoriaCalificaciones = 0;
         let totalLlamadas = 0;
 
+        // Iterate over employee calls
         for (const llamada of llamadasEmpleado) {
           const encuestasLlamada = await db.Encuesta.findAll({
             where: { IdLlamada: llamada.IdLlamada },
             attributes: ["Calificacion"],
           });
 
+          // Calculate the sum of grades and the total calls
           if (encuestasLlamada && encuestasLlamada.length > 0) {
             const sumCalificacionesLlamada = encuestasLlamada.reduce(
               (sum: number, encuesta: any) => sum + encuesta.Calificacion,
@@ -657,6 +663,7 @@ class EmpleadoController extends AbstractController {
           }
         }
 
+        // Calculate GPA
         const promedioGeneral =
           totalLlamadas > 0 ? sumatoriaCalificaciones / totalLlamadas : 0;
 
@@ -670,8 +677,7 @@ class EmpleadoController extends AbstractController {
     }
   }
 
-  // Función que calcula el promedio de la calificacion de las llamadas de un empleado en un día
-  // -----------------------------  INICIO DE LA FUNCION CORREGIDA --------------------------------
+  // Function that calculates the average rating of an employee's calls in a day
   private async getCalifPromDia(req: Request, res: Response) {
     try {
       const { id, date } = req.params;
@@ -684,12 +690,12 @@ class EmpleadoController extends AbstractController {
         return res.status(404).send("El empleado no existe");
       }
 
-      // Conversión de la fecha a un formato general
+      // Converting the date to a general format
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
 
-      // Obtener las llamadas y las califs en una fecha específica
+      // Get the calls and qualifications on a specific date
       const llamadasCalif = await db.Llamada.findAll({
         where: {
           IdEmpleado: id,
@@ -712,7 +718,7 @@ class EmpleadoController extends AbstractController {
           );
       }
 
-      // calcular el promedio de calificaciones
+      // Calculate grade point average
       let sumCalifs = 0;
       let totalCalifs = 0;
 
@@ -731,8 +737,8 @@ class EmpleadoController extends AbstractController {
       res.status(500).send("Error interno del servidor: " + error);
     }
   }
-  // -----------------------------  FIN DE LA FUNCION CORREGIDA --------------------------------
 
+  // Test function
   private getTest(req: Request, res: Response) {
     try {
       console.log("Prueba exitosa");
@@ -743,26 +749,31 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Function that calculates the number of calls of an employee
   private async getSumLlamadasEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
+
+      // Search for employee calls
       const llamadas = await db.Llamada.findAll({
-        where: { IdEmpleado: id }, // Busca las llamadas del empleado
+        where: { IdEmpleado: id }, 
+        // Count the number of calls
         attributes: [
-          "IdEmpleado", // Selecciona el id del empleado
+          "IdEmpleado", 
           [
             db.Sequelize.fn("COUNT", db.Sequelize.col("IdLlamada")),
             "NumeroLlamadas",
-          ], // Cuenta el número de llamadas
+          ],
         ],
-        group: ["IdEmpleado"], // Agrupa por empleado
+        // Group by employee
+        group: ["IdEmpleado"], 
       });
 
+      // If there are calls...
       if (llamadas && llamadas.length > 0) {
-        // Si hay llamadas...
-        res.status(200).json(llamadas); // ... manda las llamadas.
+        res.status(200).json(llamadas); 
       } else {
-        res.status(404).send("Empleado no encontrado"); // Si no, manda un error.
+        res.status(404).send("Empleado no encontrado"); 
       }
     } catch (error: any) {
       console.log(error);
@@ -770,37 +781,41 @@ class EmpleadoController extends AbstractController {
     }
   }
 
-  // Función que calcula el promedio de la duración de las llamadas de un empleado
+  // Function that calculates the average call duration of an employee
   private async getPromLlamadasEmpleado(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      
+      // Serch for employee calls
       const llamadas = await db.Llamada.findAll({
-        where: { IdEmpleado: id }, // Busca las llamadas del empleado
+        where: { IdEmpleado: id }, 
         attributes: [
-          "IdEmpleado", // Selecciona el id del empleado
+          "IdEmpleado",
+          // Calculate the average call duration
           [
             db.Sequelize.fn("AVG", db.Sequelize.col("Duracion")),
             "PromLlamadas",
-          ], // Calcula el promedio de la duración de las llamadas
+          ], 
         ],
-        group: ["IdEmpleado"], // Agrupa por empleado
+        group: ["IdEmpleado"],
       });
 
+      // If there are calls...
       if (llamadas && llamadas.length > 0) {
-        // Si hay llamadas...
-        res.status(200).json(llamadas); // ... manda las llamadas.
+        res.status(200).json(llamadas);
       } else {
-        res.status(404).send("Empleado no encontrado"); // Si no, manda un error.
+        res.status(404).send("Empleado no encontrado"); 
       }
     } catch (error: any) {
       console.log(error);
-      res.status(500).send("Internal server error" + error); // Error interno del servidor.
+      res.status(500).send("Internal server error" + error); 
     }
   }
 
+  // Function that queries the employees
   private async getConsultarEmpleados(req: Request, res: Response) {
     try {
-      let empleados = await db["Empleado"].findAll(); // Manda los datos de la tabla
+      let empleados = await db["Empleado"].findAll();
       res.status(200).json(empleados);
     } catch (err) {
       console.log(err);
@@ -808,6 +823,7 @@ class EmpleadoController extends AbstractController {
     }
   }
 
+  // Function that creates an employee
   private async postCrearEmpleado(req: Request, res: Response) {
     try {
       console.log(req.body);
