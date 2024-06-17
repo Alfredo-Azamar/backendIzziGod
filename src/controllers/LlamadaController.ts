@@ -380,30 +380,47 @@ class LlamadaController extends AbstractController {
   // Retrieves detailed information about call records for each agent
   private async getInfoCallCards(req: Request, res: Response) {
     try {
-      const llamadas = await db.sequelize.query(`
-      SELECT
-          L.Asunto, L.Sentiment, L.Notas, L.IdLlamada, L.Estado, L.FechaHora AS Fecha,
-          Cliente.Nombre AS CName, Cliente.ApellidoP AS CLastName, Cliente.Celular,
-          Zona.Nombre AS ZoneName, 
-          Empleado.Nombre, Empleado.ApellidoP, Empleado.IdEmpleado AS IdEmpleado,
-          (SELECT COUNT(*) FROM Llamada AS Llamadas WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado) AS numLlamadas 
-      FROM Empleado
-      LEFT JOIN (
-          SELECT L1.*
-          FROM Llamada AS L1
-          JOIN (
-              SELECT IdEmpleado, MAX(FechaHora) AS MaxFechaHora
-              FROM Llamada
-              GROUP BY IdEmpleado
-          ) AS L2 ON L1.IdEmpleado = L2.IdEmpleado AND L1.FechaHora = L2.MaxFechaHora
-      ) AS L ON L.IdEmpleado = Empleado.IdEmpleado
-      LEFT JOIN Cliente ON L.Celular = Cliente.Celular
-      LEFT JOIN Zona ON Cliente.IdZona = Zona.IdZona
-      WHERE Empleado.Rol = 'agente'
-      ORDER BY Empleado.Nombre;
-      `, { type: db.sequelize.QueryTypes.SELECT });
+      let llamada = await db.Llamada.findAll({
+        where: { Estado: true },
+        attributes: ["Asunto", "Sentiment", "Notas"],
+        include: [
+          {
+            model: db.Cliente,
+            as: "Cliente",
+            attributes: ["Nombre", "ApellidoP"],
+            include: [
+              {
+                model: db.Zona,
+                as: "Zona",
+                attributes: ["Nombre"],
+              },
+            ],
+          },
+          {
+            model: db.Empleado,
+            as: "Empleado",
+            attributes: [
+              "Nombre",
+              "ApellidoP",
+              [
+                db.sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM Llamada AS Llamadas
+                                WHERE Llamadas.IdEmpleado = Empleado.IdEmpleado
+                            )`),
+                "numLlamadas",
+              ],
+            ],
+          },
+        ],
+      });
 
-      res.status(200).json(llamadas);
+      // Si no la encuentra
+      if (!llamada) {
+        return res.status(404).send("No hay llamadas activas");
+      }
+
+      res.status(200).json(llamada);
     } catch (err) {
       console.log(err);
       res.status(500).send("Internal server error" + err);
