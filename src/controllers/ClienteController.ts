@@ -26,15 +26,20 @@ class ClienteController extends AbstractController {
   protected initRoutes(): void {
     // Test route
     this.router.get("/test", this.getTest.bind(this));
+
+    // Client endpoints
     this.router.post("/crearCliente", this.authMiddleware.verifyToken, this.postCustomer.bind(this));
-    this.router.post("/crearContrato", this.authMiddleware.verifyToken, this.postCustomerContract.bind(this));
     this.router.get("/consultarCliente/:phoneNum", this.authMiddleware.verifyToken, this.getSpecificCustomerInfo.bind(this));
     this.router.get("/consultarClientes", this.authMiddleware.verifyToken, this.getCustomersInfo.bind(this));
-    this.router.get("/consultarContrato", this.authMiddleware.verifyToken, this.getCustomerContract.bind(this));
     this.router.get("/paquetesPorCliente/:phoneNum", this.authMiddleware.verifyToken, this.getPackageCustomer.bind(this));
     this.router.get("/telefonoPorZona/:zoneName", this.authMiddleware.verifyToken, this.getPhoneByZone.bind(this));
+
+    // Contract endpoints
+    this.router.post("/crearContrato", this.authMiddleware.verifyToken, this.postCustomerContract.bind(this));
+    this.router.get("/consultarContrato", this.authMiddleware.verifyToken, this.getCustomerContract.bind(this));
   }
 
+  
   // Test endpoint
   private getTest(req: Request, res: Response) {
     try {
@@ -47,6 +52,8 @@ class ClienteController extends AbstractController {
     }
   }
 
+
+  // -------------------------------- Client endpoints --------------------------------
   // Creates a new client
   private async postCustomer(req: Request, res: Response) {
     try {
@@ -55,29 +62,6 @@ class ClienteController extends AbstractController {
 
       console.log("Cliente creado");
       res.status(201).send("<h1>Cliente creado</h1>");
-
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error" + err);
-    }
-  }
-
-  // Creates a new contract
-  private async postCustomerContract(req: Request, res: Response) {
-    try {
-      const {Celular, IdPaquete} = req.body;
-      // Get the current date and time
-      const FechaHora = moment().tz("America/Mexico_City").format();
-      const subFechaHora = FechaHora.substring(0, 10); 
-      
-      // Insert the new contract
-      await db.sequelize.query(`
-        INSERT INTO Contrato(Fecha, Celular, IdPaquete)
-        VALUES('${subFechaHora}', '${Celular}', '${IdPaquete}');
-        `);
-
-      console.log("Contrato creado");
-      res.status(201).send("<h1>Contrato creado</h1>");
 
     } catch (err) {
       console.log(err);
@@ -160,20 +144,6 @@ class ClienteController extends AbstractController {
     }
   }
 
-  // Retrieves a new contract
-  private async getCustomerContract(req: Request, res: Response) {
-    try {
-      // Fetch all contracts from the database
-      let contratos = await db["Contrato"].findAll();
-
-      res.status(200).json(contratos);
-
-    } catch (err) {
-      console.log(err);
-      res.status(500).send("Internal server error " + err);
-    }
-  }
-
   // Retrieves packages for a given client
   private async getPackageCustomer(req: Request, res: Response) {
     try {
@@ -237,6 +207,44 @@ class ClienteController extends AbstractController {
       res.status(500).send("Internal server error " + err);
     }
   }
+
+// -------------------------------- Contract endpoints --------------------------------
+// Creates a new contract
+private async postCustomerContract(req: Request, res: Response) {
+  try {
+    const {Celular, IdPaquete} = req.body;
+    // Get the current date and time
+    const FechaHora = moment().tz("America/Mexico_City").format();
+    const subFechaHora = FechaHora.substring(0, 10); 
+    
+    // Insert the new contract
+    await db.sequelize.query(`
+      INSERT INTO Contrato(Fecha, Celular, IdPaquete)
+      VALUES('${subFechaHora}', '${Celular}', '${IdPaquete}');
+      `);
+
+    console.log("Contrato creado");
+    res.status(201).send("<h1>Contrato creado</h1>");
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal server error" + err);
+  }
+}
+
+// Retrieves a new contract
+private async getCustomerContract(req: Request, res: Response) {
+  try {
+    // Fetch all contracts from the database
+    let contratos = await db["Contrato"].findAll();
+
+    res.status(200).json(contratos);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal server error " + err);
+  }
+}
 }
 
 export default ClienteController;
